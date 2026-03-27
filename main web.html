@@ -1,0 +1,2060 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CareerBridge AI — Smart Career Matchmaking</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,300&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #0a0a0f;
+  --bg2: #111118;
+  --bg3: #16161f;
+  --bg4: #1e1e2a;
+  --surface: #22222f;
+  --border: rgba(255,255,255,0.07);
+  --border2: rgba(255,255,255,0.12);
+  --accent: #6c63ff;
+  --accent2: #00d4aa;
+  --accent3: #ff6b6b;
+  --accent4: #ffd166;
+  --text: #f0f0f8;
+  --text2: #9898b0;
+  --text3: #5a5a70;
+  --font: 'DM Sans', sans-serif;
+  --head: 'Syne', sans-serif;
+  --radius: 12px;
+  --radius2: 20px;
+  --shadow: 0 8px 32px rgba(0,0,0,0.4);
+}
+* { margin:0; padding:0; box-sizing:border-box; }
+body { font-family:var(--font); background:var(--bg); color:var(--text); min-height:100vh; overflow-x:hidden; }
+h1,h2,h3,h4,h5 { font-family:var(--head); }
+
+/* SCROLLBAR */
+::-webkit-scrollbar { width:6px; height:6px; }
+::-webkit-scrollbar-track { background:var(--bg2); }
+::-webkit-scrollbar-thumb { background:var(--surface); border-radius:3px; }
+
+/* LOADER */
+#loader { position:fixed; inset:0; background:var(--bg); z-index:9999; display:flex; align-items:center; justify-content:center; flex-direction:column; gap:16px; transition:opacity 0.5s; }
+.loader-logo { font-family:var(--head); font-size:28px; font-weight:800; background:linear-gradient(135deg,var(--accent),var(--accent2)); -webkit-background-clip:text; -webkit-text-fill-color:transparent; }
+.loader-bar { width:200px; height:3px; background:var(--surface); border-radius:2px; overflow:hidden; }
+.loader-fill { height:100%; background:linear-gradient(90deg,var(--accent),var(--accent2)); border-radius:2px; animation:load 1.5s ease forwards; }
+@keyframes load { from{width:0} to{width:100%} }
+
+/* APP SHELL */
+#app { display:none; }
+.page { display:none; }
+.page.active { display:block; }
+
+/* NAV */
+nav { position:fixed; top:0; left:0; right:0; height:64px; background:rgba(10,10,15,0.9); backdrop-filter:blur(20px); border-bottom:1px solid var(--border); z-index:100; display:flex; align-items:center; justify-content:space-between; padding:0 24px; }
+.nav-logo { font-family:var(--head); font-size:20px; font-weight:800; cursor:pointer; }
+.nav-logo span:first-child { color:var(--accent); }
+.nav-logo span:last-child { color:var(--accent2); }
+.nav-actions { display:flex; gap:8px; align-items:center; }
+.nav-pill { padding:6px 16px; border-radius:20px; border:1px solid var(--border2); background:transparent; color:var(--text2); font-size:13px; cursor:pointer; font-family:var(--font); transition:all 0.2s; }
+.nav-pill:hover,.nav-pill.active { background:var(--accent); border-color:var(--accent); color:#fff; }
+.nav-pill.accent2 { border-color:var(--accent2); color:var(--accent2); }
+.nav-pill.accent2:hover { background:var(--accent2); color:#000; }
+.nav-pill.accent3 { border-color:var(--accent3); color:var(--accent3); }
+.nav-pill.accent3:hover { background:var(--accent3); color:#fff; }
+.nav-user { display:flex; align-items:center; gap:8px; }
+.nav-avatar { width:32px; height:32px; border-radius:50%; background:var(--accent); display:flex; align-items:center; justify-content:center; font-size:12px; font-weight:700; color:#fff; }
+#btn-logout { padding:6px 14px; border-radius:20px; background:transparent; border:1px solid var(--border2); color:var(--text2); font-size:12px; cursor:pointer; font-family:var(--font); transition:all 0.2s; }
+#btn-logout:hover { border-color:var(--accent3); color:var(--accent3); }
+
+main { padding-top:64px; min-height:100vh; }
+
+/* LANDING */
+#landing { padding:0; }
+.hero { min-height:calc(100vh - 64px); display:flex; align-items:center; justify-content:center; flex-direction:column; text-align:center; padding:40px 24px; position:relative; overflow:hidden; }
+.hero-bg { position:absolute; inset:0; background:radial-gradient(ellipse 80% 60% at 50% 20%, rgba(108,99,255,0.12) 0%, transparent 60%), radial-gradient(ellipse 60% 50% at 80% 80%, rgba(0,212,170,0.08) 0%, transparent 50%); pointer-events:none; }
+.hero-tag { display:inline-flex; align-items:center; gap:6px; background:rgba(108,99,255,0.15); border:1px solid rgba(108,99,255,0.3); border-radius:20px; padding:6px 14px; font-size:12px; color:var(--accent); letter-spacing:1px; text-transform:uppercase; margin-bottom:24px; }
+.hero h1 { font-size:clamp(36px,6vw,72px); font-weight:800; line-height:1.1; max-width:800px; margin-bottom:20px; }
+.hero h1 em { font-style:normal; background:linear-gradient(135deg,var(--accent),var(--accent2)); -webkit-background-clip:text; -webkit-text-fill-color:transparent; }
+.hero p { font-size:18px; color:var(--text2); max-width:520px; line-height:1.6; margin-bottom:40px; }
+.hero-btns { display:flex; gap:12px; flex-wrap:wrap; justify-content:center; }
+.btn { padding:12px 28px; border-radius:var(--radius); font-size:15px; font-family:var(--font); font-weight:500; cursor:pointer; border:none; transition:all 0.2s; }
+.btn-primary { background:var(--accent); color:#fff; }
+.btn-primary:hover { background:#7d75ff; transform:translateY(-1px); }
+.btn-secondary { background:var(--surface); color:var(--text); border:1px solid var(--border2); }
+.btn-secondary:hover { border-color:var(--accent); color:var(--accent); }
+.btn-success { background:var(--accent2); color:#000; font-weight:600; }
+.btn-success:hover { background:#00e8bc; }
+.btn-danger { background:var(--accent3); color:#fff; }
+.btn-danger:hover { background:#ff8585; }
+.btn-sm { padding:8px 16px; font-size:13px; }
+.btn-xs { padding:5px 12px; font-size:12px; border-radius:8px; }
+
+.features-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(260px,1fr)); gap:16px; padding:60px 40px; max-width:1200px; margin:0 auto; }
+.feature-card { background:var(--bg3); border:1px solid var(--border); border-radius:var(--radius2); padding:28px; transition:all 0.3s; cursor:default; }
+.feature-card:hover { border-color:var(--accent); transform:translateY(-4px); }
+.feat-icon { width:48px; height:48px; border-radius:14px; display:flex; align-items:center; justify-content:center; font-size:22px; margin-bottom:16px; }
+.feat-icon.purple { background:rgba(108,99,255,0.15); }
+.feat-icon.teal { background:rgba(0,212,170,0.15); }
+.feat-icon.orange { background:rgba(255,107,107,0.15); }
+.feat-icon.yellow { background:rgba(255,209,102,0.15); }
+.feature-card h3 { font-size:18px; font-weight:700; margin-bottom:8px; }
+.feature-card p { font-size:14px; color:var(--text2); line-height:1.6; }
+
+/* AUTH PAGES */
+.auth-page { min-height:calc(100vh - 64px); display:flex; align-items:center; justify-content:center; padding:40px 24px; }
+.auth-box { background:var(--bg3); border:1px solid var(--border); border-radius:var(--radius2); padding:40px; width:100%; max-width:440px; }
+.auth-title { font-size:26px; font-weight:800; margin-bottom:6px; }
+.auth-sub { font-size:14px; color:var(--text2); margin-bottom:28px; }
+.auth-tabs { display:flex; gap:0; background:var(--bg2); border-radius:var(--radius); padding:4px; margin-bottom:24px; }
+.auth-tab { flex:1; padding:8px; text-align:center; border-radius:8px; cursor:pointer; font-size:13px; color:var(--text2); transition:all 0.2s; }
+.auth-tab.active { background:var(--accent); color:#fff; }
+
+/* FORMS */
+.form-group { margin-bottom:16px; }
+label { display:block; font-size:13px; color:var(--text2); margin-bottom:6px; font-weight:500; }
+input,select,textarea { width:100%; padding:10px 14px; background:var(--bg4); border:1px solid var(--border); border-radius:var(--radius); color:var(--text); font-size:14px; font-family:var(--font); outline:none; transition:border 0.2s; }
+input:focus,select:focus,textarea:focus { border-color:var(--accent); }
+select option { background:var(--bg4); color:var(--text); }
+textarea { resize:vertical; min-height:80px; }
+.form-row { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+.form-section { background:var(--bg4); border-radius:var(--radius); padding:20px; margin-bottom:16px; border:1px solid var(--border); }
+.form-section-title { font-size:13px; font-weight:600; text-transform:uppercase; letter-spacing:1px; color:var(--accent); margin-bottom:14px; display:flex; align-items:center; gap:6px; }
+.error-msg { color:var(--accent3); font-size:12px; margin-top:4px; }
+.success-msg { color:var(--accent2); font-size:12px; margin-top:4px; }
+
+/* DASHBOARD SHELL */
+.dashboard { max-width:1300px; margin:0 auto; padding:30px 24px; }
+.dash-header { margin-bottom:28px; }
+.dash-title { font-size:28px; font-weight:800; }
+.dash-sub { font-size:14px; color:var(--text2); margin-top:4px; }
+.dash-grid { display:grid; grid-template-columns:1fr 1fr 1fr; gap:16px; margin-bottom:24px; }
+.stat-card { background:var(--bg3); border:1px solid var(--border); border-radius:var(--radius2); padding:20px; }
+.stat-val { font-size:32px; font-weight:800; font-family:var(--head); }
+.stat-label { font-size:13px; color:var(--text2); margin-top:4px; }
+.stat-card.accent { border-color:var(--accent); background:rgba(108,99,255,0.08); }
+.stat-card.accent .stat-val { color:var(--accent); }
+.stat-card.teal { border-color:var(--accent2); background:rgba(0,212,170,0.08); }
+.stat-card.teal .stat-val { color:var(--accent2); }
+.stat-card.orange { border-color:var(--accent3); background:rgba(255,107,107,0.08); }
+.stat-card.orange .stat-val { color:var(--accent3); }
+
+/* CARD */
+.card { background:var(--bg3); border:1px solid var(--border); border-radius:var(--radius2); padding:24px; margin-bottom:16px; }
+.card-title { font-size:17px; font-weight:700; margin-bottom:16px; display:flex; align-items:center; gap:8px; }
+.card-title .badge { font-size:11px; padding:3px 8px; border-radius:20px; font-family:var(--font); font-weight:500; }
+.badge-purple { background:rgba(108,99,255,0.2); color:var(--accent); }
+.badge-teal { background:rgba(0,212,170,0.2); color:var(--accent2); }
+.badge-red { background:rgba(255,107,107,0.2); color:var(--accent3); }
+.badge-yellow { background:rgba(255,209,102,0.2); color:var(--accent4); }
+
+/* TABLE */
+.tbl-wrap { overflow-x:auto; }
+table { width:100%; border-collapse:collapse; font-size:13px; }
+th { text-align:left; padding:10px 14px; color:var(--text3); font-weight:500; border-bottom:1px solid var(--border); font-size:12px; text-transform:uppercase; letter-spacing:0.5px; }
+td { padding:12px 14px; border-bottom:1px solid var(--border); color:var(--text2); }
+tr:hover td { background:rgba(255,255,255,0.02); }
+td:first-child { color:var(--text); font-weight:500; }
+
+/* SCORE RING */
+.score-ring { position:relative; display:inline-flex; align-items:center; justify-content:center; }
+.score-ring svg { transform:rotate(-90deg); }
+.score-ring .score-text { position:absolute; font-family:var(--head); font-size:14px; font-weight:700; }
+
+/* PROGRESS */
+.progress { height:6px; background:var(--surface); border-radius:3px; overflow:hidden; margin-top:6px; }
+.progress-fill { height:100%; border-radius:3px; transition:width 0.5s; }
+.progress-fill.purple { background:var(--accent); }
+.progress-fill.teal { background:var(--accent2); }
+.progress-fill.orange { background:var(--accent3); }
+
+/* SKILL TAG */
+.tag { display:inline-flex; align-items:center; gap:4px; padding:4px 10px; border-radius:6px; font-size:12px; background:var(--surface); color:var(--text2); border:1px solid var(--border); margin:3px; }
+.tag.accent { background:rgba(108,99,255,0.15); color:var(--accent); border-color:rgba(108,99,255,0.3); }
+.tag.teal { background:rgba(0,212,170,0.15); color:var(--accent2); border-color:rgba(0,212,170,0.3); }
+.tag-remove { cursor:pointer; opacity:0.6; font-size:10px; }
+.tag-remove:hover { opacity:1; }
+.tags-input-wrap { display:flex; gap:8px; align-items:center; }
+.tags-container { display:flex; flex-wrap:wrap; gap:4px; min-height:36px; padding:6px; background:var(--bg4); border:1px solid var(--border); border-radius:var(--radius); }
+.tags-container input { background:transparent; border:none; padding:2px 6px; min-width:120px; font-size:13px; flex:1; }
+.tags-container input:focus { outline:none; }
+
+/* STEPS */
+.step-nav { display:flex; gap:0; margin-bottom:28px; overflow-x:auto; padding-bottom:4px; }
+.step { display:flex; align-items:center; gap:0; }
+.step-dot { width:32px; height:32px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:12px; font-weight:700; border:2px solid var(--border2); color:var(--text3); background:var(--bg4); transition:all 0.3s; flex-shrink:0; cursor:pointer; }
+.step-dot.done { background:var(--accent2); border-color:var(--accent2); color:#000; }
+.step-dot.active { background:var(--accent); border-color:var(--accent); color:#fff; }
+.step-line { width:40px; height:2px; background:var(--border2); margin:0 2px; }
+.step-line.done { background:var(--accent2); }
+
+/* TABS */
+.tabs { display:flex; gap:4px; background:var(--bg2); border-radius:var(--radius); padding:4px; margin-bottom:20px; overflow-x:auto; }
+.tab { padding:8px 16px; border-radius:8px; cursor:pointer; font-size:13px; color:var(--text2); white-space:nowrap; transition:all 0.2s; font-weight:500; }
+.tab.active { background:var(--accent); color:#fff; }
+
+/* NOTIFICATIONS */
+#notif-bell { position:relative; cursor:pointer; }
+.notif-dot { position:absolute; top:-2px; right:-2px; width:8px; height:8px; background:var(--accent3); border-radius:50%; display:none; }
+.notif-dot.show { display:block; }
+#notif-panel { position:fixed; right:24px; top:72px; width:360px; background:var(--bg3); border:1px solid var(--border2); border-radius:var(--radius2); z-index:200; display:none; box-shadow:var(--shadow); max-height:400px; overflow-y:auto; }
+#notif-panel.show { display:block; }
+.notif-header { padding:16px 20px 12px; border-bottom:1px solid var(--border); font-weight:700; font-size:15px; display:flex; justify-content:space-between; align-items:center; }
+.notif-item { padding:14px 20px; border-bottom:1px solid var(--border); }
+.notif-item:last-child { border-bottom:none; }
+.notif-item.unread { background:rgba(108,99,255,0.06); }
+.notif-title { font-size:13px; font-weight:600; margin-bottom:4px; }
+.notif-body { font-size:12px; color:var(--text2); line-height:1.5; }
+.notif-time { font-size:11px; color:var(--text3); margin-top:4px; }
+
+/* CHATBOT */
+#chatbot-btn { position:fixed; bottom:24px; right:24px; width:52px; height:52px; border-radius:50%; background:linear-gradient(135deg,var(--accent),var(--accent2)); border:none; cursor:pointer; display:flex; align-items:center; justify-content:center; font-size:22px; z-index:300; box-shadow:0 4px 20px rgba(108,99,255,0.4); transition:transform 0.2s; }
+#chatbot-btn:hover { transform:scale(1.1); }
+#chatbot-panel { position:fixed; bottom:88px; right:24px; width:360px; height:500px; background:var(--bg3); border:1px solid var(--border2); border-radius:var(--radius2); z-index:300; display:none; flex-direction:column; box-shadow:var(--shadow); }
+#chatbot-panel.show { display:flex; }
+.chat-head { padding:16px 20px; border-bottom:1px solid var(--border); display:flex; align-items:center; gap:10px; }
+.chat-avatar { width:36px; height:36px; border-radius:50%; background:linear-gradient(135deg,var(--accent),var(--accent2)); display:flex; align-items:center; justify-content:center; font-size:16px; }
+.chat-name { font-weight:700; font-size:14px; }
+.chat-status { font-size:11px; color:var(--accent2); }
+#chat-close { margin-left:auto; background:none; border:none; color:var(--text2); cursor:pointer; font-size:18px; }
+#chat-msgs { flex:1; overflow-y:auto; padding:16px; display:flex; flex-direction:column; gap:10px; }
+.msg { max-width:80%; padding:10px 14px; border-radius:14px; font-size:13px; line-height:1.5; }
+.msg.bot { background:var(--surface); color:var(--text); border-bottom-left-radius:4px; }
+.msg.user { background:var(--accent); color:#fff; align-self:flex-end; border-bottom-right-radius:4px; }
+.chat-input-row { padding:12px 16px; border-top:1px solid var(--border); display:flex; gap:8px; }
+.chat-input-row input { flex:1; padding:8px 12px; font-size:13px; }
+.chat-send { padding:8px 14px; background:var(--accent); border:none; border-radius:8px; color:#fff; cursor:pointer; font-size:14px; }
+.typing { display:flex; gap:4px; padding:10px 14px; background:var(--surface); border-radius:14px; width:60px; }
+.typing span { width:6px; height:6px; background:var(--text3); border-radius:50%; animation:bounce 1s infinite; }
+.typing span:nth-child(2) { animation-delay:0.15s; }
+.typing span:nth-child(3) { animation-delay:0.3s; }
+@keyframes bounce { 0%,60%,100%{transform:translateY(0)} 30%{transform:translateY(-6px)} }
+
+/* MATCH CARD */
+.match-card { background:var(--bg4); border-radius:var(--radius2); padding:20px; border:1px solid var(--border); margin-bottom:12px; display:flex; align-items:flex-start; gap:16px; transition:all 0.2s; }
+.match-card:hover { border-color:var(--border2); }
+.match-card.high { border-left:3px solid var(--accent2); }
+.match-card.medium { border-left:3px solid var(--accent4); }
+.match-info { flex:1; }
+.match-name { font-weight:700; font-size:16px; margin-bottom:4px; }
+.match-detail { font-size:13px; color:var(--text2); margin-bottom:8px; }
+.match-tags { display:flex; flex-wrap:wrap; gap:4px; }
+.match-score { text-align:center; }
+.match-score-val { font-family:var(--head); font-size:24px; font-weight:800; }
+.match-score-label { font-size:11px; color:var(--text3); }
+
+/* TEST */
+.test-q { background:var(--bg4); border-radius:var(--radius); padding:20px; margin-bottom:14px; border:1px solid var(--border); }
+.test-q-text { font-weight:500; margin-bottom:12px; font-size:15px; }
+.test-options { display:flex; flex-direction:column; gap:8px; }
+.test-opt { padding:10px 14px; border-radius:8px; border:1px solid var(--border2); cursor:pointer; font-size:14px; transition:all 0.15s; }
+.test-opt:hover { border-color:var(--accent); color:var(--accent); }
+.test-opt.selected { background:rgba(108,99,255,0.15); border-color:var(--accent); color:var(--accent); }
+.test-opt.correct { background:rgba(0,212,170,0.15); border-color:var(--accent2); color:var(--accent2); }
+.test-opt.wrong { background:rgba(255,107,107,0.15); border-color:var(--accent3); color:var(--accent3); }
+.code-editor { background:#0d0d14; border:1px solid var(--border); border-radius:var(--radius); padding:16px; font-family:'Courier New',monospace; font-size:13px; color:#a9b7c6; min-height:120px; width:100%; resize:vertical; }
+
+/* MARKET */
+.market-item { display:flex; align-items:center; gap:12px; padding:12px 0; border-bottom:1px solid var(--border); }
+.market-item:last-child { border-bottom:none; }
+.market-rank { width:28px; height:28px; border-radius:8px; background:var(--surface); display:flex; align-items:center; justify-content:center; font-size:12px; font-weight:700; color:var(--text2); }
+.market-info { flex:1; }
+.market-name { font-weight:600; font-size:14px; }
+.market-meta { font-size:12px; color:var(--text2); }
+.market-trend { font-family:var(--head); font-size:13px; font-weight:700; }
+.market-trend.up { color:var(--accent2); }
+.market-trend.down { color:var(--accent3); }
+
+/* ADMIN */
+.admin-section { background:var(--bg3); border:1px solid var(--border); border-radius:var(--radius2); padding:24px; margin-bottom:16px; }
+.admin-section-title { font-size:15px; font-weight:700; margin-bottom:16px; display:flex; align-items:center; gap:8px; }
+
+/* STEPPER CONTENT */
+.step-content { display:none; }
+.step-content.active { display:block; }
+
+/* RESPONSIVE */
+@media(max-width:768px) {
+  .dash-grid { grid-template-columns:1fr 1fr; }
+  .form-row { grid-template-columns:1fr; }
+  #chatbot-panel { width:calc(100vw - 48px); right:24px; }
+  .features-grid { padding:40px 20px; }
+  nav { padding:0 16px; }
+  .dashboard { padding:20px 16px; }
+}
+@media(max-width:500px) {
+  .dash-grid { grid-template-columns:1fr; }
+}
+.hidden { display:none !important; }
+.flex { display:flex; }
+.gap8 { gap:8px; }
+.gap12 { gap:12px; }
+.items-center { align-items:center; }
+.justify-between { justify-content:space-between; }
+.mt8 { margin-top:8px; }
+.mt12 { margin-top:12px; }
+.mt16 { margin-top:16px; }
+.mb8 { margin-bottom:8px; }
+.mb12 { margin-bottom:12px; }
+.mb16 { margin-bottom:16px; }
+.text-sm { font-size:13px; }
+.text-xs { font-size:12px; }
+.text-muted { color:var(--text2); }
+.text-accent { color:var(--accent); }
+.text-teal { color:var(--accent2); }
+.text-red { color:var(--accent3); }
+.font-bold { font-weight:700; }
+.divider { height:1px; background:var(--border); margin:16px 0; }
+.alert { padding:12px 16px; border-radius:var(--radius); font-size:13px; margin-bottom:12px; }
+.alert-info { background:rgba(108,99,255,0.1); border:1px solid rgba(108,99,255,0.3); color:var(--accent); }
+.alert-success { background:rgba(0,212,170,0.1); border:1px solid rgba(0,212,170,0.3); color:var(--accent2); }
+.alert-danger { background:rgba(255,107,107,0.1); border:1px solid rgba(255,107,107,0.3); color:var(--accent3); }
+.review-form { background:var(--bg4); border-radius:var(--radius); padding:20px; border:1px solid var(--border); margin-top:12px; }
+select { cursor:pointer; }
+.two-col { display:grid; grid-template-columns:1fr 1fr; gap:16px; }
+@media(max-width:768px) { .two-col { grid-template-columns:1fr; } }
+</style>
+</head>
+<body>
+
+<div id="loader">
+  <div class="loader-logo">CareerBridge AI</div>
+  <div style="font-size:13px;color:var(--text3)">Initializing smart matchmaking engine...</div>
+  <div class="loader-bar"><div class="loader-fill"></div></div>
+</div>
+
+<div id="app">
+  <nav>
+    <div class="nav-logo" onclick="showPage('landing')"><span>Career</span><span>Bridge</span></div>
+    <div class="nav-actions" id="nav-actions">
+      <button class="nav-pill" onclick="showAuthPage('student')">Student Login</button>
+      <button class="nav-pill accent2" onclick="showAuthPage('company')">Company Login</button>
+      <button class="nav-pill accent3" onclick="showAuthPage('admin')">Admin</button>
+    </div>
+    <div class="nav-user hidden" id="nav-user">
+      <div id="notif-bell" onclick="toggleNotif()">
+        <span style="font-size:20px;cursor:pointer">🔔</span>
+        <div class="notif-dot" id="notif-dot"></div>
+      </div>
+      <div class="nav-avatar" id="nav-av"></div>
+      <span id="nav-name" style="font-size:13px;font-weight:600"></span>
+      <button id="btn-logout" onclick="logout()">Logout</button>
+    </div>
+  </nav>
+
+  <div id="notif-panel">
+    <div class="notif-header">Notifications <span onclick="toggleNotif()" style="cursor:pointer;font-weight:400;font-size:14px;color:var(--text2)">✕</span></div>
+    <div id="notif-list"></div>
+  </div>
+
+  <main>
+    <!-- LANDING -->
+    <div id="page-landing" class="page active">
+      <div id="landing">
+        <div class="hero">
+          <div class="hero-bg"></div>
+          <div class="hero-tag">✦ AI-Powered Career Matchmaking</div>
+          <h1>Bridging Students &amp;<br><em>Industry Leaders</em></h1>
+          <p>Smart matchmaking engine that connects the right talent with the right opportunity using real-time skill analysis and career intelligence.</p>
+          <div class="hero-btns">
+            <button class="btn btn-primary" onclick="showAuthPage('student')">Get Started as Student</button>
+            <button class="btn btn-success" onclick="showAuthPage('company')">Post Jobs as Company</button>
+            <button class="btn btn-secondary" onclick="showAuthPage('admin')">Admin Portal</button>
+          </div>
+        </div>
+        <div class="features-grid">
+          <div class="feature-card">
+            <div class="feat-icon purple">🧠</div>
+            <h3>Smart Matching Engine</h3>
+            <p>AI-powered algorithm matches students to job requirements with career fit scoring above 70% threshold.</p>
+          </div>
+          <div class="feature-card">
+            <div class="feat-icon teal">📊</div>
+            <h3>Live Market Tracker</h3>
+            <p>Real-time trending roles and in-demand skills data from job portals and hiring trends.</p>
+          </div>
+          <div class="feature-card">
+            <div class="feat-icon orange">🎯</div>
+            <h3>Skill Gap Analyzer</h3>
+            <p>Personalized learning path recommendations to bridge the gap between your skills and job requirements.</p>
+          </div>
+          <div class="feature-card">
+            <div class="feat-icon yellow">🧪</div>
+            <h3>Assessment Tests</h3>
+            <p>Aptitude and coding tests to evaluate candidates objectively and fairly.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- STUDENT AUTH -->
+    <div id="page-student-auth" class="page">
+      <div class="auth-page">
+        <div class="auth-box">
+          <div class="auth-title">Student Portal</div>
+          <div class="auth-sub">Access your career guidance dashboard</div>
+          <div class="auth-tabs">
+            <div class="auth-tab active" id="s-tab-login" onclick="switchTab('student','login')">Sign In</div>
+            <div class="auth-tab" id="s-tab-register" onclick="switchTab('student','register')">Register</div>
+          </div>
+          <div id="s-login-form">
+            <div class="form-group"><label>Email ID</label><input type="email" id="s-login-email" placeholder="you@email.com"></div>
+            <div class="form-group"><label>Password</label><input type="password" id="s-login-pass" placeholder="••••••••"></div>
+            <div class="error-msg" id="s-login-err"></div>
+            <button class="btn btn-primary" style="width:100%;margin-top:8px" onclick="loginUser('student')">Sign In</button>
+          </div>
+          <div id="s-register-form" style="display:none">
+            <div class="form-group"><label>Full Name</label><input type="text" id="s-reg-name" placeholder="Your full name"></div>
+            <div class="form-group"><label>Email ID</label><input type="email" id="s-reg-email" placeholder="you@email.com"></div>
+            <div class="form-group"><label>Phone Number</label><input type="tel" id="s-reg-phone" placeholder="10-digit number"></div>
+            <div class="form-group"><label>Password</label><input type="password" id="s-reg-pass" placeholder="Min 6 characters"></div>
+            <div class="error-msg" id="s-reg-err"></div>
+            <button class="btn btn-primary" style="width:100%;margin-top:8px" onclick="registerUser('student')">Create Account</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- COMPANY AUTH -->
+    <div id="page-company-auth" class="page">
+      <div class="auth-page">
+        <div class="auth-box">
+          <div class="auth-title">Company Portal</div>
+          <div class="auth-sub">Find the best talent for your team</div>
+          <div class="auth-tabs">
+            <div class="auth-tab active" id="c-tab-login" onclick="switchTab('company','login')">Sign In</div>
+            <div class="auth-tab" id="c-tab-register" onclick="switchTab('company','register')">Register</div>
+          </div>
+          <div id="c-login-form">
+            <div class="form-group"><label>Company Email</label><input type="email" id="c-login-email" placeholder="hr@company.com"></div>
+            <div class="form-group"><label>Password</label><input type="password" id="c-login-pass" placeholder="••••••••"></div>
+            <div class="error-msg" id="c-login-err"></div>
+            <button class="btn btn-success" style="width:100%;margin-top:8px" onclick="loginUser('company')">Sign In</button>
+          </div>
+          <div id="c-register-form" style="display:none">
+            <div class="form-group"><label>Company Name</label><input type="text" id="c-reg-name" placeholder="Acme Corp"></div>
+            <div class="form-group"><label>Company Email</label><input type="email" id="c-reg-email" placeholder="hr@company.com"></div>
+            <div class="form-group"><label>Industry</label><input type="text" id="c-reg-industry" placeholder="Technology, Finance, etc."></div>
+            <div class="form-group"><label>Password</label><input type="password" id="c-reg-pass" placeholder="Min 6 characters"></div>
+            <div class="error-msg" id="c-reg-err"></div>
+            <button class="btn btn-success" style="width:100%;margin-top:8px" onclick="registerUser('company')">Create Account</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ADMIN AUTH -->
+    <div id="page-admin-auth" class="page">
+      <div class="auth-page">
+        <div class="auth-box">
+          <div class="auth-title">Admin Portal</div>
+          <div class="auth-sub">Monitoring & oversight dashboard</div>
+          <div class="form-group"><label>Admin Email</label><input type="email" id="a-login-email" placeholder="admin@careerbridge.ai"></div>
+          <div class="form-group"><label>Password</label><input type="password" id="a-login-pass" placeholder="••••••••"></div>
+          <div class="error-msg" id="a-login-err"></div>
+          <button class="btn btn-danger" style="width:100%;margin-top:8px" onclick="loginAdmin()">Access Admin Panel</button>
+          <div class="alert alert-info mt16" style="font-size:12px">Default: admin@careerbridge.ai / admin123</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- STUDENT DASHBOARD -->
+    <div id="page-student-dashboard" class="page">
+      <div class="dashboard">
+        <div class="dash-header flex justify-between items-center">
+          <div>
+            <div class="dash-title" id="s-dash-name">Welcome back!</div>
+            <div class="dash-sub">Your career intelligence hub</div>
+          </div>
+          <div class="flex gap8">
+            <button class="btn btn-sm btn-primary" onclick="showStudentTab('profile')">Edit Profile</button>
+          </div>
+        </div>
+        <div class="tabs" id="s-tabs">
+          <div class="tab active" onclick="showStudentTab('overview')">📊 Overview</div>
+          <div class="tab" onclick="showStudentTab('profile')">👤 My Profile</div>
+          <div class="tab" onclick="showStudentTab('matches')">🎯 Job Matches</div>
+          <div class="tab" onclick="showStudentTab('market')">📈 Market Trends</div>
+          <div class="tab" onclick="showStudentTab('skills')">🔧 Skill Gap</div>
+          <div class="tab" onclick="showStudentTab('tests')">🧪 Assessments</div>
+          <div class="tab" onclick="showStudentTab('docs')">📄 Documents</div>
+          <div class="tab" onclick="showStudentTab('notifications')">🔔 Notifications</div>
+        </div>
+
+        <!-- OVERVIEW TAB -->
+        <div id="s-tab-overview" class="step-content active">
+          <div class="dash-grid">
+            <div class="stat-card accent"><div class="stat-val" id="s-match-count">0</div><div class="stat-label">Job Matches Found</div></div>
+            <div class="stat-card teal"><div class="stat-val" id="s-score-avg">-</div><div class="stat-label">Avg Match Score</div></div>
+            <div class="stat-card orange"><div class="stat-val" id="s-test-score">-</div><div class="stat-label">Assessment Score</div></div>
+          </div>
+          <div class="two-col">
+            <div class="card">
+              <div class="card-title">Profile Completion</div>
+              <div id="s-profile-completion-bars"></div>
+            </div>
+            <div class="card">
+              <div class="card-title">Top Job Matches</div>
+              <div id="s-top-matches"></div>
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-title">Recent Feedback from Companies <span class="badge badge-red">Notifications</span></div>
+            <div id="s-feedback-list"><div class="text-muted text-sm">No feedback received yet.</div></div>
+          </div>
+        </div>
+
+        <!-- PROFILE TAB -->
+        <div id="s-tab-profile" class="step-content">
+          <div class="card">
+            <div class="card-title">Personal Information</div>
+            <div class="form-row">
+              <div class="form-group"><label>Full Name</label><input type="text" id="sp-name" placeholder="Your full name"></div>
+              <div class="form-group"><label>Phone Number</label><input type="tel" id="sp-phone" placeholder="10-digit number"></div>
+            </div>
+            <div class="form-group"><label>Email ID</label><input type="email" id="sp-email" placeholder="you@email.com" readonly style="opacity:0.6"></div>
+          </div>
+          <div class="card">
+            <div class="card-title">Education Details</div>
+            <div class="form-row">
+              <div class="form-group"><label>Degree</label>
+                <select id="sp-degree"><option value="">Select Degree</option><option>B.Tech</option><option>B.E</option><option>B.Sc</option><option>BCA</option><option>B.Com</option><option>MBA</option><option>MCA</option><option>M.Tech</option></select>
+              </div>
+              <div class="form-group"><label>Branch / Specialization</label><input type="text" id="sp-branch" placeholder="Computer Science, ECE, etc."></div>
+            </div>
+            <div class="form-row">
+              <div class="form-group"><label>College Name</label><input type="text" id="sp-college" placeholder="Your college name"></div>
+              <div class="form-group"><label>CGPA / Percentage</label><input type="number" id="sp-cgpa" placeholder="e.g. 8.5 or 85" step="0.1" min="0" max="100"></div>
+            </div>
+            <div class="form-group"><label>Active Backlogs</label>
+              <select id="sp-backlogs"><option value="0">No backlogs</option><option value="1">1 backlog</option><option value="2">2 backlogs</option><option value="3+">3+ backlogs</option></select>
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-title">Skills &amp; Resume</div>
+            <div class="form-group">
+              <label>Skills (press Enter or comma to add)</label>
+              <div class="tags-container" id="sp-skills-container" onclick="document.getElementById('sp-skill-input').focus()">
+                <input type="text" id="sp-skill-input" placeholder="Add a skill..." onkeydown="addTag(event,'sp-skills','sp-skill-input')">
+              </div>
+            </div>
+            <div class="form-group">
+              <label>Projects</label>
+              <textarea id="sp-projects" placeholder="Describe your projects (title, description, tech stack)..." rows="3"></textarea>
+            </div>
+            <div class="form-group">
+              <label>Certifications</label>
+              <textarea id="sp-certs" placeholder="List any certifications (AWS, Google, Coursera, etc.)..." rows="2"></textarea>
+            </div>
+            <div class="form-group">
+              <label>Coding Profile Links (optional)</label>
+              <input type="text" id="sp-coding" placeholder="LeetCode, GitHub, CodeChef, HackerRank URLs">
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-title">Additional Info</div>
+            <div class="form-row">
+              <div class="form-group"><label>Communication Skill</label>
+                <select id="sp-comm"><option value="">Self-rate</option><option value="5">Excellent</option><option value="4">Good</option><option value="3">Average</option><option value="2">Below Average</option></select>
+              </div>
+              <div class="form-group"><label>Willing to Relocate</label>
+                <select id="sp-relocate"><option value="">Select</option><option value="yes">Yes</option><option value="no">No</option><option value="negotiable">Negotiable</option></select>
+              </div>
+            </div>
+          </div>
+          <button class="btn btn-primary" onclick="saveStudentProfile()">💾 Save Profile</button>
+          <span id="s-profile-save-msg" class="success-msg" style="margin-left:12px"></span>
+        </div>
+
+        <!-- MATCHES TAB -->
+        <div id="s-tab-matches" class="step-content">
+          <div class="alert alert-info">Matches are calculated based on your profile vs company requirements. 100% match = auto-referred! 70%+ = you can apply.</div>
+          <div id="s-matches-list"><div class="text-muted text-sm">Complete your profile and save to see matches.</div></div>
+        </div>
+
+        <!-- MARKET TRENDS TAB -->
+        <div id="s-tab-market" class="step-content">
+          <div class="two-col">
+            <div class="card">
+              <div class="card-title">🔥 Trending Roles</div>
+              <div class="market-item">
+                <div class="market-rank">1</div>
+                <div class="market-info"><div class="market-name">AI/ML Engineer</div><div class="market-meta">45,000+ openings</div></div>
+                <div class="market-trend up">↑ 42%</div>
+              </div>
+              <div class="market-item">
+                <div class="market-rank">2</div>
+                <div class="market-info"><div class="market-name">Full Stack Developer</div><div class="market-meta">38,000+ openings</div></div>
+                <div class="market-trend up">↑ 28%</div>
+              </div>
+              <div class="market-item">
+                <div class="market-rank">3</div>
+                <div class="market-info"><div class="market-name">Data Scientist</div><div class="market-meta">22,000+ openings</div></div>
+                <div class="market-trend up">↑ 35%</div>
+              </div>
+              <div class="market-item">
+                <div class="market-rank">4</div>
+                <div class="market-info"><div class="market-name">Cloud Engineer</div><div class="market-meta">18,500+ openings</div></div>
+                <div class="market-trend up">↑ 31%</div>
+              </div>
+              <div class="market-item">
+                <div class="market-rank">5</div>
+                <div class="market-info"><div class="market-name">Cybersecurity Analyst</div><div class="market-meta">15,000+ openings</div></div>
+                <div class="market-trend up">↑ 19%</div>
+              </div>
+              <div class="market-item">
+                <div class="market-rank">6</div>
+                <div class="market-info"><div class="market-name">DevOps Engineer</div><div class="market-meta">12,000+ openings</div></div>
+                <div class="market-trend up">↑ 22%</div>
+              </div>
+            </div>
+            <div class="card">
+              <div class="card-title">⚡ In-Demand Skills</div>
+              <div class="market-item">
+                <div class="market-rank" style="background:rgba(108,99,255,0.2);color:var(--accent)">1</div>
+                <div class="market-info"><div class="market-name">Python</div><div class="market-meta">Data, AI, Web</div></div>
+                <div class="market-trend up">↑ High</div>
+              </div>
+              <div class="market-item">
+                <div class="market-rank" style="background:rgba(0,212,170,0.2);color:var(--accent2)">2</div>
+                <div class="market-info"><div class="market-name">React.js</div><div class="market-meta">Frontend Dev</div></div>
+                <div class="market-trend up">↑ High</div>
+              </div>
+              <div class="market-item">
+                <div class="market-rank">3</div>
+                <div class="market-info"><div class="market-name">TensorFlow / PyTorch</div><div class="market-meta">AI/ML</div></div>
+                <div class="market-trend up">↑ High</div>
+              </div>
+              <div class="market-item">
+                <div class="market-rank">4</div>
+                <div class="market-info"><div class="market-name">AWS / Azure / GCP</div><div class="market-meta">Cloud</div></div>
+                <div class="market-trend up">↑ High</div>
+              </div>
+              <div class="market-item">
+                <div class="market-rank">5</div>
+                <div class="market-info"><div class="market-name">Docker / Kubernetes</div><div class="market-meta">DevOps</div></div>
+                <div class="market-trend up">↑ Med</div>
+              </div>
+              <div class="market-item">
+                <div class="market-rank">6</div>
+                <div class="market-info"><div class="market-name">SQL / NoSQL</div><div class="market-meta">Database</div></div>
+                <div class="market-trend down">→ Stable</div>
+              </div>
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-title">📉 Salary Benchmarks (India, 2024)</div>
+            <div id="salary-bars"></div>
+          </div>
+        </div>
+
+        <!-- SKILL GAP TAB -->
+        <div id="s-tab-skills" class="step-content">
+          <div class="card">
+            <div class="card-title">🔍 Skill Gap Analyzer</div>
+            <div class="alert alert-info mb12">Based on your profile and market demand, here are your gaps and learning paths.</div>
+            <div id="skill-gap-content"><div class="text-muted text-sm">Save your profile first to see skill gap analysis.</div></div>
+          </div>
+        </div>
+
+        <!-- TESTS TAB -->
+        <div id="s-tab-tests" class="step-content">
+          <div class="two-col">
+            <div class="card" style="cursor:pointer;transition:all 0.2s" onclick="startTest('aptitude')" id="test-apt-card">
+              <div class="feat-icon yellow" style="margin-bottom:12px">🧮</div>
+              <h3 style="margin-bottom:6px">Aptitude Test</h3>
+              <p class="text-muted text-sm">20 questions — Logical, Quantitative, Verbal</p>
+              <div id="apt-score-display" class="mt12 text-sm text-teal"></div>
+              <button class="btn btn-sm btn-primary mt12">Start Test</button>
+            </div>
+            <div class="card" style="cursor:pointer;transition:all 0.2s" onclick="startTest('coding')" id="test-code-card">
+              <div class="feat-icon purple" style="margin-bottom:12px">💻</div>
+              <h3 style="margin-bottom:6px">Coding Test</h3>
+              <p class="text-muted text-sm">5 problems — Algorithms, Data Structures</p>
+              <div id="code-score-display" class="mt12 text-sm text-teal"></div>
+              <button class="btn btn-sm btn-primary mt12">Start Test</button>
+            </div>
+          </div>
+          <div id="test-area" style="display:none">
+            <div class="card">
+              <div class="flex justify-between items-center mb16">
+                <div class="card-title" id="test-title" style="margin-bottom:0">Test</div>
+                <div>
+                  <span id="test-timer" class="text-accent font-bold text-sm"></span>
+                  <button class="btn btn-xs btn-danger" style="margin-left:8px" onclick="submitTest()">Submit</button>
+                  <button class="btn btn-xs" style="margin-left:4px;background:var(--surface);color:var(--text2)" onclick="closeTest()">✕ Close</button>
+                </div>
+              </div>
+              <div id="test-questions"></div>
+              <button class="btn btn-primary mt16" onclick="submitTest()">Submit Test</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- DOCS TAB -->
+        <div id="s-tab-docs" class="step-content">
+          <div class="card">
+            <div class="card-title">📄 Documents Upload</div>
+            <div class="alert alert-info mb16">Documents are stored after selection/placement offer. Upload mark sheets and ID proof.</div>
+            <div class="form-group">
+              <label>Mark Sheets (Semester-wise)</label>
+              <textarea id="doc-marksheet" placeholder="Paste your marks details or upload info: Sem1: 8.5 CGPA, Sem2: 8.2..."></textarea>
+            </div>
+            <div class="form-group">
+              <label>ID Proof Details</label>
+              <input type="text" id="doc-id" placeholder="Aadhar number / Passport number (last 4 digits only)">
+            </div>
+            <div class="form-group">
+              <label>Additional Certificates</label>
+              <textarea id="doc-extra" placeholder="Any additional certifications or documents..." rows="2"></textarea>
+            </div>
+            <button class="btn btn-primary" onclick="saveDocs()">Save Documents</button>
+            <span id="doc-save-msg" class="success-msg" style="margin-left:12px"></span>
+          </div>
+        </div>
+
+        <!-- NOTIFICATIONS TAB -->
+        <div id="s-tab-notifications" class="step-content">
+          <div class="card">
+            <div class="card-title">🔔 All Notifications</div>
+            <div id="s-notif-full-list"><div class="text-muted text-sm">No notifications yet.</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- COMPANY DASHBOARD -->
+    <div id="page-company-dashboard" class="page">
+      <div class="dashboard">
+        <div class="dash-header flex justify-between items-center">
+          <div>
+            <div class="dash-title" id="c-dash-name">Company Dashboard</div>
+            <div class="dash-sub">Hire smarter with AI-powered candidate matching</div>
+          </div>
+        </div>
+        <div class="tabs">
+          <div class="tab active" onclick="showCompanyTab('overview')">📊 Overview</div>
+          <div class="tab" onclick="showCompanyTab('requirements')">📋 Job Requirements</div>
+          <div class="tab" onclick="showCompanyTab('candidates')">👥 Matched Candidates</div>
+          <div class="tab" onclick="showCompanyTab('review')">📝 Send Feedback</div>
+          <div class="tab" onclick="showCompanyTab('notifications')">🔔 Notifications</div>
+        </div>
+
+        <!-- COMPANY OVERVIEW -->
+        <div id="c-tab-overview" class="step-content active">
+          <div class="dash-grid">
+            <div class="stat-card accent"><div class="stat-val" id="c-cand-count">0</div><div class="stat-label">Matched Candidates</div></div>
+            <div class="stat-card teal"><div class="stat-val" id="c-perfect-count">0</div><div class="stat-label">Perfect Matches (100%)</div></div>
+            <div class="stat-card orange"><div class="stat-val" id="c-req-count">0</div><div class="stat-label">Active Requirements</div></div>
+          </div>
+          <div class="card">
+            <div class="card-title">Top Matched Candidates</div>
+            <div id="c-top-cands"><div class="text-muted text-sm">Post your requirements to see matches.</div></div>
+          </div>
+        </div>
+
+        <!-- REQUIREMENTS TAB -->
+        <div id="c-tab-requirements" class="step-content">
+          <div class="card">
+            <div class="card-title">Post Job Requirements</div>
+            <div class="form-row">
+              <div class="form-group"><label>Job Role / Position</label><input type="text" id="cr-role" placeholder="Software Engineer, Data Analyst..."></div>
+              <div class="form-group"><label>Department</label><input type="text" id="cr-dept" placeholder="Engineering, Data Science..."></div>
+            </div>
+            <div class="form-section">
+              <div class="form-section-title">🎓 Education Requirements</div>
+              <div class="form-row">
+                <div class="form-group"><label>Required Degree</label>
+                  <select id="cr-degree"><option value="">Any</option><option>B.Tech</option><option>B.E</option><option>B.Sc</option><option>BCA</option><option>MCA</option><option>MBA</option><option>M.Tech</option></select>
+                </div>
+                <div class="form-group"><label>Preferred Branch</label><input type="text" id="cr-branch" placeholder="CS, IT, ECE, Any..."></div>
+              </div>
+              <div class="form-row">
+                <div class="form-group"><label>Minimum CGPA</label><input type="number" id="cr-cgpa" placeholder="e.g. 7.0" step="0.1" min="0" max="10"></div>
+                <div class="form-group"><label>Backlogs Allowed</label>
+                  <select id="cr-backlogs"><option value="0">No backlogs</option><option value="1">Up to 1</option><option value="2">Up to 2</option></select>
+                </div>
+              </div>
+            </div>
+            <div class="form-section">
+              <div class="form-section-title">💼 Skills Required</div>
+              <div class="form-group">
+                <label>Required Skills (press Enter or comma)</label>
+                <div class="tags-container" id="cr-skills-container" onclick="document.getElementById('cr-skill-input').focus()">
+                  <input type="text" id="cr-skill-input" placeholder="Add required skill..." onkeydown="addTag(event,'cr-skills','cr-skill-input')">
+                </div>
+              </div>
+              <div class="form-group"><label>Projects Required</label>
+                <select id="cr-projects"><option value="0">None</option><option value="1">At least 1</option><option value="2">At least 2</option><option value="3">3 or more</option></select>
+              </div>
+            </div>
+            <div class="form-section">
+              <div class="form-section-title">🧠 Other Criteria</div>
+              <div class="form-row">
+                <div class="form-group"><label>Communication Required</label>
+                  <select id="cr-comm"><option value="3">Average & above</option><option value="4">Good & above</option><option value="5">Excellent only</option></select>
+                </div>
+                <div class="form-group"><label>Relocation Required</label>
+                  <select id="cr-relocate"><option value="no">Not required</option><option value="yes">Required</option><option value="negotiable">Preferred</option></select>
+                </div>
+              </div>
+              <div class="form-row">
+                <div class="form-group"><label>Assessment Score Minimum (%)</label><input type="number" id="cr-test-min" placeholder="e.g. 60" min="0" max="100"></div>
+                <div class="form-group"><label>Number of Openings</label><input type="number" id="cr-openings" placeholder="5" min="1"></div>
+              </div>
+              <div class="form-group"><label>Job Description</label><textarea id="cr-desc" placeholder="Detailed job description..." rows="3"></textarea></div>
+              <div class="form-group"><label>Package (LPA)</label><input type="text" id="cr-package" placeholder="e.g. 6-10 LPA"></div>
+            </div>
+            <button class="btn btn-success" onclick="saveRequirement()">📌 Post Requirement</button>
+            <span id="c-req-msg" class="success-msg" style="margin-left:12px"></span>
+          </div>
+          <div class="card">
+            <div class="card-title">Posted Requirements</div>
+            <div id="c-req-list"><div class="text-muted text-sm">No requirements posted yet.</div></div>
+          </div>
+        </div>
+
+        <!-- CANDIDATES TAB -->
+        <div id="c-tab-candidates" class="step-content">
+          <div class="alert alert-info mb12">Students with 100% match are auto-referred. You can view and contact students above 70% match.</div>
+          <div id="c-candidates-list"><div class="text-muted text-sm">Post requirements to see matched candidates.</div></div>
+        </div>
+
+        <!-- REVIEW TAB -->
+        <div id="c-tab-review" class="step-content">
+          <div class="card">
+            <div class="card-title">📝 Send Feedback / Rejection Review</div>
+            <div class="alert alert-info mb16">Send structured feedback to students. They will be notified immediately.</div>
+            <div class="form-group"><label>Select Student</label>
+              <select id="rev-student"><option value="">-- Select a candidate --</option></select>
+            </div>
+            <div class="form-group"><label>Feedback Type</label>
+              <select id="rev-type"><option value="rejection">Rejection with Feedback</option><option value="shortlisted">Shortlisted</option><option value="interview">Interview Invite</option><option value="offer">Job Offer</option></select>
+            </div>
+            <div class="form-group"><label>Feedback Message</label>
+              <textarea id="rev-msg" placeholder="Provide constructive feedback: areas to improve, specific skills needed, etc..." rows="4"></textarea>
+            </div>
+            <div class="form-group"><label>Improvement Areas (optional)</label>
+              <input type="text" id="rev-improve" placeholder="e.g. Improve DSA skills, Learn React, get AWS certification">
+            </div>
+            <button class="btn btn-success" onclick="sendReview()">📤 Send Feedback</button>
+            <span id="rev-msg-status" class="success-msg" style="margin-left:12px"></span>
+          </div>
+        </div>
+
+        <!-- COMPANY NOTIFICATIONS -->
+        <div id="c-tab-notifications" class="step-content">
+          <div class="card">
+            <div class="card-title">🔔 Notifications</div>
+            <div id="c-notif-full-list"><div class="text-muted text-sm">No notifications yet.</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ADMIN DASHBOARD -->
+    <div id="page-admin-dashboard" class="page">
+      <div class="dashboard">
+        <div class="dash-header">
+          <div class="dash-title">🛡️ Admin Monitoring Panel</div>
+          <div class="dash-sub">System-wide oversight — students, companies, and matches</div>
+        </div>
+        <div class="tabs">
+          <div class="tab active" onclick="showAdminTab('overview')">📊 Overview</div>
+          <div class="tab" onclick="showAdminTab('students')">👤 All Students</div>
+          <div class="tab" onclick="showAdminTab('companies')">🏢 All Companies</div>
+          <div class="tab" onclick="showAdminTab('matches')">🎯 All Matches</div>
+          <div class="tab" onclick="showAdminTab('reviews')">📝 All Feedback</div>
+        </div>
+        <div id="a-tab-overview" class="step-content active">
+          <div class="dash-grid">
+            <div class="stat-card accent"><div class="stat-val" id="a-st-count">0</div><div class="stat-label">Total Students</div></div>
+            <div class="stat-card teal"><div class="stat-val" id="a-co-count">0</div><div class="stat-label">Total Companies</div></div>
+            <div class="stat-card orange"><div class="stat-val" id="a-ma-count">0</div><div class="stat-label">Total Matches</div></div>
+          </div>
+          <div class="two-col">
+            <div class="admin-section">
+              <div class="admin-section-title">📊 Platform Stats</div>
+              <div id="admin-stats-detail"></div>
+            </div>
+            <div class="admin-section">
+              <div class="admin-section-title">🔔 Recent Activity</div>
+              <div id="admin-activity"></div>
+            </div>
+          </div>
+        </div>
+        <div id="a-tab-students" class="step-content">
+          <div class="admin-section">
+            <div class="admin-section-title">👤 All Registered Students</div>
+            <div id="admin-students-list"></div>
+          </div>
+        </div>
+        <div id="a-tab-companies" class="step-content">
+          <div class="admin-section">
+            <div class="admin-section-title">🏢 All Registered Companies</div>
+            <div id="admin-companies-list"></div>
+          </div>
+        </div>
+        <div id="a-tab-matches" class="step-content">
+          <div class="admin-section">
+            <div class="admin-section-title">🎯 All Match Pairs</div>
+            <div id="admin-matches-list"></div>
+          </div>
+        </div>
+        <div id="a-tab-reviews" class="step-content">
+          <div class="admin-section">
+            <div class="admin-section-title">📝 All Company Feedback</div>
+            <div id="admin-reviews-list"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<!-- CHATBOT -->
+<button id="chatbot-btn" onclick="toggleChat()">🤖</button>
+<div id="chatbot-panel">
+  <div class="chat-head">
+    <div class="chat-avatar">🤖</div>
+    <div><div class="chat-name">BridgeBot</div><div class="chat-status">● Online — AI Assistant</div></div>
+    <button id="chat-close" onclick="toggleChat()">✕</button>
+  </div>
+  <div id="chat-msgs">
+    <div class="msg bot">Hi! I'm BridgeBot 👋 I can help you with career guidance, skill advice, job matching, and navigating CareerBridge AI. What would you like to know?</div>
+  </div>
+  <div class="chat-input-row">
+    <input type="text" id="chat-input" placeholder="Ask me anything..." onkeydown="if(event.key==='Enter')sendChat()">
+    <button class="chat-send" onclick="sendChat()">➤</button>
+  </div>
+</div>
+
+<script>
+// ============================================================
+// DATA LAYER — localStorage persistence
+// ============================================================
+const DB = {
+  get: (k) => { try { return JSON.parse(localStorage.getItem('cb_'+k)) || null; } catch(e){ return null; } },
+  set: (k, v) => { try { localStorage.setItem('cb_'+k, JSON.stringify(v)); } catch(e){} },
+  del: (k) => { localStorage.removeItem('cb_'+k); }
+};
+
+// Initialize admin account
+function initAdmin() {
+  const admins = DB.get('admins') || [];
+  if (!admins.find(a => a.email === 'admin@careerbridge.ai')) {
+    admins.push({ email:'admin@careerbridge.ai', password:'admin123', name:'System Admin' });
+    DB.set('admins', admins);
+  }
+}
+
+let currentUser = null;
+let currentRole = null;
+const tagStores = {};
+
+// ============================================================
+// NAVIGATION
+// ============================================================
+function showPage(name) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  const el = document.getElementById('page-'+name);
+  if (el) el.classList.add('active');
+}
+
+function showAuthPage(role) {
+  showPage(role+'-auth');
+  updateNavButtons();
+}
+
+function updateNavButtons() {
+  const loggedIn = !!currentUser;
+  document.getElementById('nav-actions').classList.toggle('hidden', loggedIn);
+  document.getElementById('nav-user').classList.toggle('hidden', !loggedIn);
+  if (loggedIn) {
+    const initials = (currentUser.name || currentUser.email || '?').slice(0,2).toUpperCase();
+    document.getElementById('nav-av').textContent = initials;
+    document.getElementById('nav-name').textContent = currentUser.name || currentUser.email;
+  }
+}
+
+// ============================================================
+// AUTH
+// ============================================================
+function switchTab(role, mode) {
+  const loginForm = document.getElementById(role[0]+'-login-form');
+  const regForm = document.getElementById(role[0]+'-register-form');
+  const tabLogin = document.getElementById(role[0]+'-tab-login');
+  const tabReg = document.getElementById(role[0]+'-tab-register');
+  if (mode === 'login') {
+    loginForm.style.display = ''; regForm.style.display = 'none';
+    tabLogin.classList.add('active'); tabReg.classList.remove('active');
+  } else {
+    loginForm.style.display = 'none'; regForm.style.display = '';
+    tabLogin.classList.remove('active'); tabReg.classList.add('active');
+  }
+}
+
+function registerUser(role) {
+  const prefix = role === 'student' ? 's' : 'c';
+  const nameEl = document.getElementById(prefix+'-reg-name');
+  const emailEl = document.getElementById(prefix+'-reg-email');
+  const passEl = document.getElementById(prefix+'-reg-pass');
+  const errEl = document.getElementById(prefix+'-reg-err');
+  const name = nameEl.value.trim();
+  const email = emailEl.value.trim().toLowerCase();
+  const pass = passEl.value;
+  errEl.textContent = '';
+  if (!name) { errEl.textContent = 'Name is required.'; return; }
+  if (!email || !email.includes('@')) { errEl.textContent = 'Valid email required.'; return; }
+  if (pass.length < 6) { errEl.textContent = 'Password min 6 characters.'; return; }
+  const users = DB.get(role+'_users') || [];
+  if (users.find(u => u.email === email)) { errEl.textContent = 'Email already registered.'; return; }
+  const newUser = { id: Date.now().toString(), email, password: pass, name, role };
+  if (role === 'company') {
+    const indEl = document.getElementById('c-reg-industry');
+    newUser.industry = indEl ? indEl.value.trim() : '';
+  } else {
+    const phoneEl = document.getElementById('s-reg-phone');
+    newUser.phone = phoneEl ? phoneEl.value.trim() : '';
+  }
+  users.push(newUser);
+  DB.set(role+'_users', users);
+  addActivity(`New ${role} registered: ${name}`);
+  errEl.style.color = 'var(--accent2)';
+  errEl.textContent = 'Account created! Signing in...';
+  setTimeout(() => {
+    currentUser = newUser; currentRole = role;
+    goToDashboard(role);
+  }, 700);
+}
+
+function loginUser(role) {
+  const prefix = role === 'student' ? 's' : 'c';
+  const emailEl = document.getElementById(prefix+'-login-email');
+  const passEl = document.getElementById(prefix+'-login-pass');
+  const errEl = document.getElementById(prefix+'-login-err');
+  const email = emailEl.value.trim().toLowerCase();
+  const pass = passEl.value;
+  errEl.textContent = '';
+  const users = DB.get(role+'_users') || [];
+  const user = users.find(u => u.email === email && u.password === pass);
+  if (!user) { errEl.textContent = 'Invalid email or password.'; return; }
+  currentUser = user; currentRole = role;
+  goToDashboard(role);
+}
+
+function loginAdmin() {
+  const email = document.getElementById('a-login-email').value.trim().toLowerCase();
+  const pass = document.getElementById('a-login-pass').value;
+  const errEl = document.getElementById('a-login-err');
+  const admins = DB.get('admins') || [];
+  const admin = admins.find(a => a.email === email && a.password === pass);
+  if (!admin) { errEl.textContent = 'Invalid admin credentials.'; return; }
+  currentUser = admin; currentRole = 'admin';
+  goToDashboard('admin');
+}
+
+function logout() {
+  currentUser = null; currentRole = null;
+  showPage('landing');
+  updateNavButtons();
+}
+
+function goToDashboard(role) {
+  updateNavButtons();
+  if (role === 'student') {
+    showPage('student-dashboard');
+    loadStudentDashboard();
+  } else if (role === 'company') {
+    showPage('company-dashboard');
+    loadCompanyDashboard();
+  } else {
+    showPage('admin-dashboard');
+    loadAdminDashboard();
+  }
+}
+
+// ============================================================
+// TAGS INPUT
+// ============================================================
+function addTag(event, storeName, inputId) {
+  if (event.key === 'Enter' || event.key === ',') {
+    event.preventDefault();
+    const input = document.getElementById(inputId);
+    const val = input.value.replace(',','').trim();
+    if (!val) return;
+    if (!tagStores[storeName]) tagStores[storeName] = [];
+    if (!tagStores[storeName].includes(val)) {
+      tagStores[storeName].push(val);
+      renderTags(storeName, inputId.replace('-input',''));
+    }
+    input.value = '';
+  }
+}
+
+function renderTags(storeName, containerId) {
+  const container = document.getElementById(containerId+'-container');
+  if (!container) return;
+  const input = container.querySelector('input');
+  const inputEl = input ? input.cloneNode(true) : null;
+  container.innerHTML = '';
+  (tagStores[storeName] || []).forEach((tag, i) => {
+    const el = document.createElement('span');
+    el.className = 'tag accent';
+    el.innerHTML = tag + `<span class="tag-remove" onclick="removeTag('${storeName}',${i},'${containerId}')">✕</span>`;
+    container.appendChild(el);
+  });
+  if (inputEl) container.appendChild(inputEl);
+}
+
+function removeTag(storeName, idx, containerId) {
+  tagStores[storeName].splice(idx, 1);
+  const inputId = containerId.replace('-container','') + '-input';
+  renderTags(storeName, containerId.replace('-container',''));
+}
+
+function setTagsFromArray(storeName, arr, containerId) {
+  tagStores[storeName] = arr ? [...arr] : [];
+  renderTags(storeName, containerId);
+}
+
+// ============================================================
+// STUDENT DASHBOARD
+// ============================================================
+function loadStudentDashboard() {
+  const profile = DB.get('student_profile_'+currentUser.id) || {};
+  document.getElementById('s-dash-name').textContent = `Welcome, ${currentUser.name || 'Student'}! 👋`;
+  // Load profile fields
+  document.getElementById('sp-name').value = profile.name || currentUser.name || '';
+  document.getElementById('sp-phone').value = profile.phone || currentUser.phone || '';
+  document.getElementById('sp-email').value = profile.email || currentUser.email || '';
+  document.getElementById('sp-degree').value = profile.degree || '';
+  document.getElementById('sp-branch').value = profile.branch || '';
+  document.getElementById('sp-college').value = profile.college || '';
+  document.getElementById('sp-cgpa').value = profile.cgpa || '';
+  document.getElementById('sp-backlogs').value = profile.backlogs || '0';
+  document.getElementById('sp-projects').value = profile.projects || '';
+  document.getElementById('sp-certs').value = profile.certs || '';
+  document.getElementById('sp-coding').value = profile.coding || '';
+  document.getElementById('sp-comm').value = profile.comm || '';
+  document.getElementById('sp-relocate').value = profile.relocate || '';
+  setTagsFromArray('sp-skills', profile.skills || [], 'sp-skills');
+  // Docs
+  const docs = DB.get('student_docs_'+currentUser.id) || {};
+  document.getElementById('doc-marksheet').value = docs.marksheet || '';
+  document.getElementById('doc-id').value = docs.id || '';
+  document.getElementById('doc-extra').value = docs.extra || '';
+  // Test scores
+  const tests = DB.get('student_tests_'+currentUser.id) || {};
+  if (tests.aptitude !== undefined) {
+    document.getElementById('apt-score-display').textContent = `Last score: ${tests.aptitude}%`;
+    document.getElementById('s-test-score').textContent = tests.aptitude + '%';
+  }
+  if (tests.coding !== undefined) {
+    document.getElementById('code-score-display').textContent = `Last score: ${tests.coding}%`;
+  }
+  renderStudentOverview();
+  renderSalaryBars();
+  renderStudentNotifications();
+  renderSkillGap();
+  populateReviewStudentDropdown();
+}
+
+function showStudentTab(tab) {
+  document.querySelectorAll('#page-student-dashboard .step-content').forEach(c => c.classList.remove('active'));
+  document.getElementById('s-tab-'+tab).classList.add('active');
+  document.querySelectorAll('#page-student-dashboard .tab').forEach((t,i) => {
+    const tabs = ['overview','profile','matches','market','skills','tests','docs','notifications'];
+    t.classList.toggle('active', tabs[i] === tab);
+  });
+  if (tab === 'matches') renderStudentMatches();
+  if (tab === 'skills') renderSkillGap();
+  if (tab === 'notifications') renderStudentNotifications();
+}
+
+function saveStudentProfile() {
+  const profile = {
+    name: document.getElementById('sp-name').value.trim(),
+    phone: document.getElementById('sp-phone').value.trim(),
+    email: currentUser.email,
+    degree: document.getElementById('sp-degree').value,
+    branch: document.getElementById('sp-branch').value.trim(),
+    college: document.getElementById('sp-college').value.trim(),
+    cgpa: parseFloat(document.getElementById('sp-cgpa').value) || 0,
+    backlogs: document.getElementById('sp-backlogs').value,
+    projects: document.getElementById('sp-projects').value.trim(),
+    certs: document.getElementById('sp-certs').value.trim(),
+    coding: document.getElementById('sp-coding').value.trim(),
+    comm: document.getElementById('sp-comm').value,
+    relocate: document.getElementById('sp-relocate').value,
+    skills: tagStores['sp-skills'] || []
+  };
+  DB.set('student_profile_'+currentUser.id, profile);
+  // Update name in user list
+  const users = DB.get('student_users') || [];
+  const idx = users.findIndex(u => u.id === currentUser.id);
+  if (idx >= 0) { users[idx].name = profile.name || users[idx].name; DB.set('student_users', users); }
+  currentUser.name = profile.name || currentUser.name;
+  document.getElementById('nav-name').textContent = currentUser.name;
+  document.getElementById('nav-av').textContent = currentUser.name.slice(0,2).toUpperCase();
+  document.getElementById('s-profile-save-msg').textContent = '✓ Profile saved!';
+  addActivity(`Student profile updated: ${profile.name}`);
+  setTimeout(() => { document.getElementById('s-profile-save-msg').textContent = ''; }, 2000);
+  renderStudentOverview();
+  renderSkillGap();
+}
+
+function saveDocs() {
+  const docs = {
+    marksheet: document.getElementById('doc-marksheet').value.trim(),
+    id: document.getElementById('doc-id').value.trim(),
+    extra: document.getElementById('doc-extra').value.trim()
+  };
+  DB.set('student_docs_'+currentUser.id, docs);
+  document.getElementById('doc-save-msg').textContent = '✓ Documents saved!';
+  setTimeout(() => { document.getElementById('doc-save-msg').textContent = ''; }, 2000);
+}
+
+function renderStudentOverview() {
+  const profile = DB.get('student_profile_'+currentUser.id) || {};
+  // Profile completion
+  const fields = ['name','phone','degree','branch','college','cgpa','skills','projects','comm','relocate'];
+  let done = 0;
+  fields.forEach(f => {
+    if (f === 'skills') { if ((profile.skills||[]).length > 0) done++; }
+    else if (profile[f]) done++;
+  });
+  const pct = Math.round((done/fields.length)*100);
+  const bars = document.getElementById('s-profile-completion-bars');
+  if (bars) {
+    bars.innerHTML = `
+      <div class="flex justify-between mb8"><span class="text-sm">Overall Completion</span><span class="text-sm text-accent font-bold">${pct}%</span></div>
+      <div class="progress"><div class="progress-fill purple" style="width:${pct}%"></div></div>
+      <div class="mt12">
+        ${fields.map(f => {
+          let filled = f === 'skills' ? (profile.skills||[]).length > 0 : !!profile[f];
+          return `<div class="flex justify-between text-xs mt8"><span class="text-muted">${f.charAt(0).toUpperCase()+f.slice(1)}</span><span style="color:${filled?'var(--accent2)':'var(--accent3)}'}">${filled?'✓':'○'}</span></div>`;
+        }).join('')}
+      </div>`;
+  }
+  // Matches
+  const matches = computeStudentMatches();
+  document.getElementById('s-match-count').textContent = matches.length;
+  if (matches.length > 0) {
+    const avg = Math.round(matches.reduce((a,b) => a+b.score, 0)/matches.length);
+    document.getElementById('s-score-avg').textContent = avg + '%';
+  }
+  const topMatchEl = document.getElementById('s-top-matches');
+  if (topMatchEl) {
+    if (matches.length === 0) {
+      topMatchEl.innerHTML = '<div class="text-muted text-sm">Save your profile to see matches.</div>';
+    } else {
+      topMatchEl.innerHTML = matches.slice(0,3).map(m => `
+        <div class="flex justify-between items-center" style="padding:8px 0;border-bottom:1px solid var(--border)">
+          <div>
+            <div class="text-sm font-bold">${m.role}</div>
+            <div class="text-xs text-muted">${m.company}</div>
+          </div>
+          <div class="text-sm font-bold" style="color:${m.score>=100?'var(--accent2)':m.score>=70?'var(--accent4)':'var(--accent3)'}">${m.score}%</div>
+        </div>`).join('');
+    }
+  }
+  // Feedback
+  renderStudentFeedback();
+}
+
+function computeStudentMatches() {
+  const profile = DB.get('student_profile_'+currentUser.id) || {};
+  const requirements = DB.get('all_requirements') || [];
+  const tests = DB.get('student_tests_'+currentUser.id) || {};
+  const matches = [];
+  requirements.forEach(req => {
+    let score = 0, total = 0, breakdown = [];
+    // Degree
+    if (req.degree && req.degree !== '') {
+      total += 15;
+      if (!profile.degree) {}
+      else if (profile.degree === req.degree || req.degree === 'Any') { score += 15; breakdown.push({k:'Degree',v:15,m:15}); }
+      else { breakdown.push({k:'Degree',v:0,m:15}); }
+    }
+    // CGPA
+    if (req.cgpa) {
+      total += 20;
+      const minCgpa = parseFloat(req.cgpa) || 0;
+      const studCgpa = parseFloat(profile.cgpa) || 0;
+      if (studCgpa >= minCgpa) { score += 20; breakdown.push({k:'CGPA',v:20,m:20}); }
+      else if (studCgpa >= minCgpa - 0.5) { score += 10; breakdown.push({k:'CGPA',v:10,m:20}); }
+      else { breakdown.push({k:'CGPA',v:0,m:20}); }
+    }
+    // Backlogs
+    if (req.backlogs !== undefined) {
+      total += 10;
+      const allowedBl = parseInt(req.backlogs) || 0;
+      const studBl = profile.backlogs === '3+' ? 3 : parseInt(profile.backlogs) || 0;
+      if (studBl <= allowedBl) { score += 10; breakdown.push({k:'Backlogs',v:10,m:10}); }
+      else { breakdown.push({k:'Backlogs',v:0,m:10}); }
+    }
+    // Skills
+    const reqSkills = req.skills || [];
+    if (reqSkills.length > 0) {
+      total += 30;
+      const studSkills = (profile.skills || []).map(s => s.toLowerCase());
+      const matched = reqSkills.filter(s => studSkills.includes(s.toLowerCase())).length;
+      const skillScore = Math.round((matched/reqSkills.length)*30);
+      score += skillScore;
+      breakdown.push({k:'Skills',v:skillScore,m:30});
+    }
+    // Projects
+    if (req.projects && parseInt(req.projects) > 0) {
+      total += 10;
+      const projCount = (profile.projects || '').split('\n').filter(p => p.trim()).length || (profile.projects ? 1 : 0);
+      const reqProj = parseInt(req.projects);
+      if (projCount >= reqProj) { score += 10; breakdown.push({k:'Projects',v:10,m:10}); }
+      else { breakdown.push({k:'Projects',v:0,m:10}); }
+    }
+    // Communication
+    if (req.comm) {
+      total += 10;
+      const studComm = parseInt(profile.comm) || 0;
+      const reqComm = parseInt(req.comm) || 3;
+      if (studComm >= reqComm) { score += 10; breakdown.push({k:'Communication',v:10,m:10}); }
+      else { breakdown.push({k:'Communication',v:0,m:10}); }
+    }
+    // Test score
+    if (req.testMin && parseInt(req.testMin) > 0) {
+      total += 15;
+      const avgTest = tests.aptitude !== undefined ? (parseInt(tests.aptitude || 0) + parseInt(tests.coding || tests.aptitude || 0))/2 : 0;
+      if (avgTest >= parseInt(req.testMin)) { score += 15; breakdown.push({k:'Assessment',v:15,m:15}); }
+      else { breakdown.push({k:'Assessment',v:0,m:15}); }
+    }
+    if (total === 0) total = 100;
+    const finalScore = Math.min(100, Math.round((score/total)*100));
+    if (finalScore >= 70) {
+      matches.push({ score: finalScore, role: req.role, company: req.companyName, companyId: req.companyId, reqId: req.id, breakdown, req, profile });
+    }
+  });
+  return matches.sort((a,b) => b.score - a.score);
+}
+
+function renderStudentMatches() {
+  const matches = computeStudentMatches();
+  const el = document.getElementById('s-matches-list');
+  if (!el) return;
+  if (matches.length === 0) {
+    el.innerHTML = '<div class="alert alert-danger">No matches found above 70%. Check the Skill Gap Analyzer for improvement tips.</div>'; return;
+  }
+  el.innerHTML = matches.map(m => `
+    <div class="match-card ${m.score>=100?'high':'medium'}">
+      <div class="match-info">
+        <div class="match-name">${m.role} <span style="font-size:12px;color:var(--text3);font-family:var(--font)">@ ${m.company}</span></div>
+        <div class="match-detail">Package: ${m.req.package||'Not disclosed'} • Openings: ${m.req.openings||'N/A'}</div>
+        <div class="match-tags">${(m.req.skills||[]).map(s=>`<span class="tag">${s}</span>`).join('')}</div>
+        ${m.score===100?'<div class="alert alert-success mt8 text-xs">🎉 Auto-referred to company!</div>':''}
+        <div class="mt8">
+          ${m.breakdown.map(b => `
+            <div class="flex justify-between text-xs mt4">
+              <span class="text-muted">${b.k}</span>
+              <div style="flex:1;margin:0 8px"><div class="progress" style="margin-top:5px"><div class="progress-fill ${b.v===b.m?'teal':'purple'}" style="width:${b.m>0?Math.round((b.v/b.m)*100):0}%"></div></div></div>
+              <span style="color:${b.v===b.m?'var(--accent2)':'var(--text2)'}">${b.v}/${b.m}</span>
+            </div>`).join('')}
+        </div>
+      </div>
+      <div class="match-score">
+        <div class="match-score-val" style="color:${m.score>=100?'var(--accent2)':m.score>=85?'var(--accent4)':'var(--accent)'}">${m.score}%</div>
+        <div class="match-score-label">Match</div>
+      </div>
+    </div>`).join('');
+  // Auto-notify company for 100% matches
+  matches.filter(m => m.score === 100).forEach(m => {
+    autoReferStudent(m);
+  });
+}
+
+function autoReferStudent(match) {
+  const key = 'auto_ref_'+currentUser.id+'_'+match.reqId;
+  if (DB.get(key)) return;
+  DB.set(key, true);
+  addNotification(match.companyId, 'company',
+    `🎯 Auto-Referral: ${currentUser.name}`,
+    `Student ${currentUser.name} has a 100% match for ${match.role}. Review their profile!`);
+}
+
+function renderStudentFeedback() {
+  const feedback = DB.get('feedback_to_'+currentUser.id) || [];
+  const el = document.getElementById('s-feedback-list');
+  if (!el) return;
+  if (feedback.length === 0) { el.innerHTML = '<div class="text-muted text-sm">No feedback received yet.</div>'; return; }
+  el.innerHTML = feedback.map(f => `
+    <div class="review-form mb8">
+      <div class="flex justify-between items-center mb8">
+        <span class="text-sm font-bold">${f.company} — ${f.role}</span>
+        <span class="badge ${f.type==='rejection'?'badge-red':f.type==='offer'?'badge-teal':'badge-purple'}">${f.type}</span>
+      </div>
+      <div class="text-sm text-muted">${f.message}</div>
+      ${f.improve?`<div class="mt8 text-xs" style="color:var(--accent4)">💡 Improve: ${f.improve}</div>`:''}
+      <div class="text-xs text-muted mt8">${f.time}</div>
+    </div>`).join('');
+}
+
+function renderStudentNotifications() {
+  const notifs = DB.get('notifs_'+currentUser.id) || [];
+  const el = document.getElementById('s-notif-full-list');
+  if (!el) return;
+  if (notifs.length === 0) { el.innerHTML = '<div class="text-muted text-sm">No notifications yet.</div>'; return; }
+  el.innerHTML = notifs.map(n => `
+    <div class="notif-item ${n.read?'':'unread'}">
+      <div class="notif-title">${n.title}</div>
+      <div class="notif-body">${n.body}</div>
+      <div class="notif-time">${n.time}</div>
+    </div>`).join('');
+  updateNotifBell();
+}
+
+function renderSkillGap() {
+  const profile = DB.get('student_profile_'+currentUser.id) || {};
+  const el = document.getElementById('skill-gap-content');
+  if (!el) return;
+  const marketSkills = ['Python','JavaScript','React.js','Node.js','SQL','Machine Learning','TensorFlow','AWS','Docker','Git','Data Structures','Algorithms','REST API','MongoDB','Java'];
+  const userSkills = (profile.skills || []).map(s => s.toLowerCase());
+  const missing = marketSkills.filter(s => !userSkills.includes(s.toLowerCase()));
+  const present = marketSkills.filter(s => userSkills.includes(s.toLowerCase()));
+  const resources = {
+    'Python': { link:'https://python.org', platform:'Python.org / Coursera' },
+    'JavaScript': { link:'https://javascript.info', platform:'javascript.info / freeCodeCamp' },
+    'React.js': { link:'https://react.dev', platform:'react.dev / Scrimba' },
+    'Machine Learning': { link:'https://coursera.org', platform:'Coursera / fast.ai' },
+    'AWS': { link:'https://aws.amazon.com/training', platform:'AWS Training / A Cloud Guru' },
+    'Docker': { link:'https://docs.docker.com', platform:'Docker Docs / KodeKloud' },
+    'SQL': { link:'https://sqlzoo.net', platform:'SQLZoo / Mode Analytics' },
+    'Data Structures': { link:'https://leetcode.com', platform:'LeetCode / GeeksForGeeks' },
+  };
+  el.innerHTML = `
+    <div class="two-col mb16">
+      <div>
+        <div class="text-sm font-bold mb8" style="color:var(--accent2)">✓ Skills You Have (${present.length})</div>
+        <div>${present.map(s=>`<span class="tag teal">${s}</span>`).join('') || '<span class="text-muted text-sm">None matched yet</span>'}</div>
+      </div>
+      <div>
+        <div class="text-sm font-bold mb8" style="color:var(--accent3)">✗ Skills to Learn (${missing.length})</div>
+        <div>${missing.slice(0,8).map(s=>`<span class="tag">${s}</span>`).join('')}</div>
+      </div>
+    </div>
+    <div class="divider"></div>
+    <div class="text-sm font-bold mb12">📚 Recommended Learning Path</div>
+    ${missing.slice(0,6).map((s,i) => `
+      <div class="review-form mb8 flex items-center gap12">
+        <div style="width:28px;height:28px;border-radius:8px;background:rgba(108,99,255,0.2);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:var(--accent);flex-shrink:0">${i+1}</div>
+        <div style="flex:1">
+          <div class="text-sm font-bold">${s}</div>
+          <div class="text-xs text-muted">${resources[s]?.platform || 'Search on Coursera / YouTube / Udemy'}</div>
+        </div>
+        <a href="${resources[s]?.link||'https://coursera.org'}" target="_blank" class="btn btn-xs btn-primary">Learn →</a>
+      </div>`).join('')}
+    <div class="alert alert-success mt12">Overall skill coverage: ${Math.round((present.length/marketSkills.length)*100)}% of market demand</div>`;
+}
+
+function renderSalaryBars() {
+  const el = document.getElementById('salary-bars');
+  if (!el) return;
+  const data = [
+    { role:'AI/ML Engineer', min:10, max:35 },
+    { role:'Full Stack Dev', min:6, max:22 },
+    { role:'Data Scientist', min:8, max:28 },
+    { role:'Cloud Engineer', min:7, max:25 },
+    { role:'DevOps Engineer', min:6, max:20 },
+    { role:'Frontend Dev', min:4, max:18 },
+  ];
+  el.innerHTML = data.map(d => `
+    <div class="flex items-center gap12 mb8">
+      <div style="width:140px;font-size:12px;color:var(--text2);flex-shrink:0">${d.role}</div>
+      <div style="flex:1">
+        <div class="progress"><div class="progress-fill purple" style="width:${Math.round((d.max/35)*100)}%"></div></div>
+      </div>
+      <div class="text-xs text-accent font-bold" style="width:70px;text-align:right">₹${d.min}–${d.max}L</div>
+    </div>`).join('');
+}
+
+// ============================================================
+// ASSESSMENTS
+// ============================================================
+const aptitudeQuestions = [
+  { q:'If 3x + 7 = 22, what is x?', opts:['3','5','7','4'], ans:1 },
+  { q:'A train travels 60km in 45 minutes. Speed in km/h?', opts:['75','80','90','60'], ans:1 },
+  { q:'Find the odd one out: 2, 3, 5, 7, 9, 11', opts:['9','3','5','2'], ans:0 },
+  { q:'If A > B and B > C, then:', opts:['A > C','A < C','A = C','Cannot determine'], ans:0 },
+  { q:'20% of 500 is?', opts:['100','80','120','50'], ans:0 },
+  { q:'Complete the series: 1, 4, 9, 16, ___', opts:['20','25','36','30'], ans:1 },
+  { q:'A shopkeeper buys at ₹80, sells at ₹100. Profit %?', opts:['20%','25%','30%','15%'], ans:1 },
+  { q:'BCDE : FGHI :: JKLM : ?', opts:['NOPQ','MNOP','OPQR','PQRS'], ans:0 },
+  { q:'What comes next: AZ, BY, CX, DW, ___', opts:['EV','FU','EW','EX'], ans:0 },
+  { q:'If today is Monday, what day is it 100 days later?', opts:['Wednesday','Thursday','Friday','Saturday'], ans:0 },
+];
+
+const codingQuestions = [
+  { q:'What is the time complexity of binary search?', opts:['O(n)','O(log n)','O(n²)','O(1)'], ans:1 },
+  { q:'Which data structure uses LIFO?', opts:['Queue','Stack','Tree','Graph'], ans:1 },
+  { q:'In Python, what does list.append() do?', opts:['Removes last element','Adds element at beginning','Adds element at end','Sorts list'], ans:2 },
+  { q:'What is a NULL pointer?', opts:['Pointer to itself','Pointer to zero','Pointer to nothing/0x0','Undefined pointer'], ans:2 },
+  { q:'Which sorting has best average case O(n log n)?', opts:['Bubble Sort','Insertion Sort','Merge Sort','Selection Sort'], ans:2 },
+];
+
+let testType = null;
+let testAnswers = {};
+let timerInterval = null;
+
+function startTest(type) {
+  testType = type;
+  testAnswers = {};
+  document.getElementById('test-area').style.display = 'block';
+  const questions = type === 'aptitude' ? aptitudeQuestions : codingQuestions;
+  document.getElementById('test-title').textContent = type === 'aptitude' ? '🧮 Aptitude Test' : '💻 Coding Test';
+  let time = type === 'aptitude' ? 1200 : 900;
+  clearInterval(timerInterval);
+  timerInterval = setInterval(() => {
+    time--;
+    const m = Math.floor(time/60), s = time%60;
+    document.getElementById('test-timer').textContent = `${m}:${s.toString().padStart(2,'0')}`;
+    if (time <= 0) submitTest();
+  }, 1000);
+  renderTestQuestions(questions);
+  document.getElementById('test-area').scrollIntoView({ behavior:'smooth' });
+}
+
+function renderTestQuestions(questions) {
+  const el = document.getElementById('test-questions');
+  el.innerHTML = questions.map((q, qi) => `
+    <div class="test-q" id="tq-${qi}">
+      <div class="test-q-text">Q${qi+1}. ${q.q}</div>
+      <div class="test-options">
+        ${q.opts.map((o,oi) => `
+          <div class="test-opt" id="opt-${qi}-${oi}" onclick="selectOpt(${qi},${oi})">${String.fromCharCode(65+oi)}. ${o}</div>
+        `).join('')}
+      </div>
+    </div>`).join('');
+}
+
+function selectOpt(qi, oi) {
+  const questions = testType === 'aptitude' ? aptitudeQuestions : codingQuestions;
+  questions[qi].opts.forEach((_,i) => {
+    const el = document.getElementById(`opt-${qi}-${i}`);
+    if (el) el.classList.remove('selected');
+  });
+  const el = document.getElementById(`opt-${qi}-${oi}`);
+  if (el) el.classList.add('selected');
+  testAnswers[qi] = oi;
+}
+
+function submitTest() {
+  clearInterval(timerInterval);
+  const questions = testType === 'aptitude' ? aptitudeQuestions : codingQuestions;
+  let correct = 0;
+  questions.forEach((q,qi) => {
+    const ans = testAnswers[qi];
+    questions[qi].opts.forEach((_,oi) => {
+      const el = document.getElementById(`opt-${qi}-${oi}`);
+      if (!el) return;
+      if (oi === q.ans) el.classList.add('correct');
+      else if (oi === ans && ans !== q.ans) el.classList.add('wrong');
+    });
+    if (ans === q.ans) correct++;
+  });
+  const score = Math.round((correct/questions.length)*100);
+  const tests = DB.get('student_tests_'+currentUser.id) || {};
+  tests[testType] = score;
+  DB.set('student_tests_'+currentUser.id, tests);
+  if (testType === 'aptitude') {
+    document.getElementById('apt-score-display').textContent = `Score: ${score}% (${correct}/${questions.length})`;
+    document.getElementById('s-test-score').textContent = score + '%';
+  } else {
+    document.getElementById('code-score-display').textContent = `Score: ${score}% (${correct}/${questions.length})`;
+  }
+  document.getElementById('test-timer').textContent = `Completed! Score: ${score}%`;
+  addActivity(`Student ${currentUser.name} completed ${testType} test — ${score}%`);
+}
+
+function closeTest() {
+  clearInterval(timerInterval);
+  document.getElementById('test-area').style.display = 'none';
+}
+
+// ============================================================
+// COMPANY DASHBOARD
+// ============================================================
+function loadCompanyDashboard() {
+  document.getElementById('c-dash-name').textContent = `${currentUser.name} Dashboard 🏢`;
+  renderCompanyOverview();
+  renderCompanyRequirements();
+  populateReviewStudentDropdown();
+  renderCompanyNotifications();
+}
+
+function showCompanyTab(tab) {
+  document.querySelectorAll('#page-company-dashboard .step-content').forEach(c => c.classList.remove('active'));
+  document.getElementById('c-tab-'+tab).classList.add('active');
+  document.querySelectorAll('#page-company-dashboard .tab').forEach((t,i) => {
+    const tabs = ['overview','requirements','candidates','review','notifications'];
+    t.classList.toggle('active', tabs[i] === tab);
+  });
+  if (tab === 'candidates') renderCompanyCandidates();
+  if (tab === 'notifications') renderCompanyNotifications();
+}
+
+function saveRequirement() {
+  const role = document.getElementById('cr-role').value.trim();
+  if (!role) { document.getElementById('c-req-msg').style.color='var(--accent3)'; document.getElementById('c-req-msg').textContent='Role is required!'; return; }
+  const req = {
+    id: Date.now().toString(),
+    companyId: currentUser.id,
+    companyName: currentUser.name,
+    role,
+    dept: document.getElementById('cr-dept').value.trim(),
+    degree: document.getElementById('cr-degree').value,
+    branch: document.getElementById('cr-branch').value.trim(),
+    cgpa: document.getElementById('cr-cgpa').value,
+    backlogs: document.getElementById('cr-backlogs').value,
+    skills: tagStores['cr-skills'] || [],
+    projects: document.getElementById('cr-projects').value,
+    comm: document.getElementById('cr-comm').value,
+    relocate: document.getElementById('cr-relocate').value,
+    testMin: document.getElementById('cr-test-min').value,
+    openings: document.getElementById('cr-openings').value,
+    desc: document.getElementById('cr-desc').value.trim(),
+    package: document.getElementById('cr-package').value.trim(),
+    postedAt: new Date().toLocaleDateString()
+  };
+  const all = DB.get('all_requirements') || [];
+  all.push(req);
+  DB.set('all_requirements', all);
+  document.getElementById('c-req-msg').style.color = 'var(--accent2)';
+  document.getElementById('c-req-msg').textContent = '✓ Requirement posted!';
+  addActivity(`Company ${currentUser.name} posted new requirement: ${role}`);
+  setTimeout(() => { document.getElementById('c-req-msg').textContent = ''; }, 2000);
+  tagStores['cr-skills'] = [];
+  renderTags('cr-skills', 'cr-skills');
+  ['cr-role','cr-dept','cr-branch','cr-cgpa','cr-desc','cr-package','cr-test-min','cr-openings'].forEach(id => document.getElementById(id).value = '');
+  renderCompanyRequirements();
+  renderCompanyOverview();
+}
+
+function renderCompanyRequirements() {
+  const all = DB.get('all_requirements') || [];
+  const mine = all.filter(r => r.companyId === currentUser.id);
+  const el = document.getElementById('c-req-list');
+  if (!el) return;
+  document.getElementById('c-req-count').textContent = mine.length;
+  if (mine.length === 0) { el.innerHTML = '<div class="text-muted text-sm">No requirements posted yet.</div>'; return; }
+  el.innerHTML = mine.map(r => `
+    <div class="match-card">
+      <div class="match-info">
+        <div class="match-name">${r.role} <span class="badge badge-purple">${r.dept||'General'}</span></div>
+        <div class="match-detail">Posted: ${r.postedAt} • Package: ${r.package||'N/A'} • Openings: ${r.openings||'N/A'}</div>
+        <div class="match-tags">${(r.skills||[]).map(s=>`<span class="tag">${s}</span>`).join('')}</div>
+      </div>
+      <button class="btn btn-xs btn-danger" onclick="deleteRequirement('${r.id}')">🗑 Delete</button>
+    </div>`).join('');
+}
+
+function deleteRequirement(id) {
+  let all = DB.get('all_requirements') || [];
+  all = all.filter(r => r.id !== id);
+  DB.set('all_requirements', all);
+  renderCompanyRequirements();
+  renderCompanyOverview();
+}
+
+function renderCompanyOverview() {
+  const all = DB.get('all_requirements') || [];
+  const mine = all.filter(r => r.companyId === currentUser.id);
+  const students = DB.get('student_users') || [];
+  let allMatches = [];
+  students.forEach(s => {
+    const profile = DB.get('student_profile_'+s.id) || {};
+    mine.forEach(req => {
+      const score = computeMatchScore(profile, req, s.id);
+      if (score >= 70) allMatches.push({ student: s, profile, req, score });
+    });
+  });
+  allMatches.sort((a,b) => b.score - a.score);
+  document.getElementById('c-cand-count').textContent = allMatches.length;
+  document.getElementById('c-perfect-count').textContent = allMatches.filter(m => m.score === 100).length;
+  const el = document.getElementById('c-top-cands');
+  if (!el) return;
+  if (allMatches.length === 0) { el.innerHTML = '<div class="text-muted text-sm">No matches yet. Post requirements to see candidates.</div>'; return; }
+  el.innerHTML = allMatches.slice(0,5).map(m => `
+    <div class="flex justify-between items-center" style="padding:10px 0;border-bottom:1px solid var(--border)">
+      <div>
+        <div class="text-sm font-bold">${m.student.name||m.student.email}</div>
+        <div class="text-xs text-muted">${m.req.role} • ${(m.profile.skills||[]).slice(0,3).join(', ')}</div>
+      </div>
+      <div class="text-sm font-bold" style="color:${m.score>=100?'var(--accent2)':m.score>=85?'var(--accent4)':'var(--accent)'}">${m.score}%</div>
+    </div>`).join('');
+}
+
+function computeMatchScore(profile, req, studentId) {
+  const tests = DB.get('student_tests_'+studentId) || {};
+  let score = 0, total = 0;
+  if (req.degree && req.degree !== '') { total += 15; if (profile.degree === req.degree || req.degree === 'Any') score += 15; }
+  if (req.cgpa) { total += 20; const minCgpa = parseFloat(req.cgpa)||0, studCgpa = parseFloat(profile.cgpa)||0; if (studCgpa >= minCgpa) score += 20; else if (studCgpa >= minCgpa-0.5) score += 10; }
+  if (req.backlogs !== undefined) { total += 10; const abl = parseInt(req.backlogs)||0, sbl = profile.backlogs==='3+'?3:parseInt(profile.backlogs)||0; if (sbl <= abl) score += 10; }
+  const reqSkills = req.skills || [];
+  if (reqSkills.length > 0) { total += 30; const ss = (profile.skills||[]).map(s=>s.toLowerCase()); const m = reqSkills.filter(s=>ss.includes(s.toLowerCase())).length; score += Math.round((m/reqSkills.length)*30); }
+  if (req.projects && parseInt(req.projects) > 0) { total += 10; const pc = (profile.projects||'').split('\n').filter(p=>p.trim()).length || (profile.projects?1:0); if (pc >= parseInt(req.projects)) score += 10; }
+  if (req.comm) { total += 10; if ((parseInt(profile.comm)||0) >= (parseInt(req.comm)||3)) score += 10; }
+  if (req.testMin && parseInt(req.testMin) > 0) { total += 15; const avgT = tests.aptitude !== undefined ? (parseInt(tests.aptitude||0)+parseInt(tests.coding||tests.aptitude||0))/2 : 0; if (avgT >= parseInt(req.testMin)) score += 15; }
+  if (total === 0) total = 100;
+  return Math.min(100, Math.round((score/total)*100));
+}
+
+function renderCompanyCandidates() {
+  const all = DB.get('all_requirements') || [];
+  const mine = all.filter(r => r.companyId === currentUser.id);
+  const students = DB.get('student_users') || [];
+  let allMatches = [];
+  students.forEach(s => {
+    const profile = DB.get('student_profile_'+s.id) || {};
+    mine.forEach(req => {
+      const score = computeMatchScore(profile, req, s.id);
+      if (score >= 70) allMatches.push({ student: s, profile, req, score });
+    });
+  });
+  allMatches.sort((a,b) => b.score - a.score);
+  const el = document.getElementById('c-candidates-list');
+  if (!el) return;
+  if (allMatches.length === 0) { el.innerHTML = '<div class="alert alert-danger">No candidates matched above 70% yet. Post requirements or wait for students to sign up.</div>'; return; }
+  el.innerHTML = allMatches.map(m => `
+    <div class="match-card ${m.score>=100?'high':'medium'}">
+      <div class="match-info">
+        <div class="match-name">${m.student.name||'Student'} <span style="font-size:12px;color:var(--text3);font-family:var(--font)">for ${m.req.role}</span></div>
+        <div class="match-detail">${m.profile.degree||'Degree N/A'} | ${m.profile.college||'College N/A'} | CGPA: ${m.profile.cgpa||'N/A'}</div>
+        <div class="match-tags">${(m.profile.skills||[]).map(s=>`<span class="tag">${s}</span>`).join('')}</div>
+        ${m.score===100?'<div class="alert alert-success mt8 text-xs">🎉 Auto-referred candidate</div>':''}
+        <div class="text-xs text-muted mt8">📧 ${m.student.email}</div>
+      </div>
+      <div class="match-score">
+        <div class="match-score-val" style="color:${m.score>=100?'var(--accent2)':m.score>=85?'var(--accent4)':'var(--accent)'}">${m.score}%</div>
+        <div class="match-score-label">Career Fit</div>
+      </div>
+    </div>`).join('');
+}
+
+function populateReviewStudentDropdown() {
+  const el = document.getElementById('rev-student');
+  if (!el) return;
+  const students = DB.get('student_users') || [];
+  el.innerHTML = '<option value="">-- Select a candidate --</option>' + students.map(s => `<option value="${s.id}">${s.name||s.email}</option>`).join('');
+}
+
+function sendReview() {
+  const studentId = document.getElementById('rev-student').value;
+  const type = document.getElementById('rev-type').value;
+  const msg = document.getElementById('rev-msg').value.trim();
+  const improve = document.getElementById('rev-improve').value.trim();
+  const statusEl = document.getElementById('rev-msg-status');
+  if (!studentId) { statusEl.style.color='var(--accent3)'; statusEl.textContent='Select a student!'; return; }
+  if (!msg) { statusEl.style.color='var(--accent3)'; statusEl.textContent='Message is required!'; return; }
+  const reqs = (DB.get('all_requirements')||[]).filter(r=>r.companyId===currentUser.id);
+  const feedback = {
+    company: currentUser.name,
+    companyId: currentUser.id,
+    role: reqs.length > 0 ? reqs[0].role : 'General',
+    type, message: msg, improve,
+    time: new Date().toLocaleString()
+  };
+  const existing = DB.get('feedback_to_'+studentId) || [];
+  existing.unshift(feedback);
+  DB.set('feedback_to_'+studentId, existing);
+  // Notify student
+  addNotification(studentId, 'student',
+    `📝 Feedback from ${currentUser.name}`,
+    type === 'rejection' ? `You received feedback: ${msg.slice(0,60)}...` : `Great news! ${type}: ${msg.slice(0,60)}...`);
+  statusEl.style.color='var(--accent2)';
+  statusEl.textContent = '✓ Feedback sent to student!';
+  document.getElementById('rev-msg').value='';
+  document.getElementById('rev-improve').value='';
+  addActivity(`${currentUser.name} sent ${type} feedback to student`);
+  setTimeout(() => { statusEl.textContent=''; }, 2000);
+}
+
+function renderCompanyNotifications() {
+  const notifs = DB.get('notifs_'+currentUser.id) || [];
+  const el = document.getElementById('c-notif-full-list');
+  if (!el) return;
+  if (notifs.length === 0) { el.innerHTML = '<div class="text-muted text-sm">No notifications yet.</div>'; return; }
+  el.innerHTML = notifs.map(n => `
+    <div class="notif-item ${n.read?'':'unread'}">
+      <div class="notif-title">${n.title}</div>
+      <div class="notif-body">${n.body}</div>
+      <div class="notif-time">${n.time}</div>
+    </div>`).join('');
+  // Mark as read
+  notifs.forEach(n => n.read = true);
+  DB.set('notifs_'+currentUser.id, notifs);
+  updateNotifBell();
+}
+
+// ============================================================
+// NOTIFICATIONS
+// ============================================================
+function addNotification(userId, role, title, body) {
+  const key = 'notifs_'+userId;
+  const notifs = DB.get(key) || [];
+  notifs.unshift({ id: Date.now().toString(), title, body, time: new Date().toLocaleString(), read: false });
+  DB.set(key, notifs);
+  if (currentUser && currentUser.id === userId) updateNotifBell();
+}
+
+function toggleNotif() {
+  const panel = document.getElementById('notif-panel');
+  panel.classList.toggle('show');
+  if (panel.classList.contains('show')) {
+    renderNotifPanel();
+  }
+}
+
+function renderNotifPanel() {
+  if (!currentUser) return;
+  const notifs = DB.get('notifs_'+currentUser.id) || [];
+  const el = document.getElementById('notif-list');
+  if (notifs.length === 0) {
+    el.innerHTML = '<div class="notif-item text-muted text-sm">No notifications</div>';
+    return;
+  }
+  el.innerHTML = notifs.slice(0,10).map(n => `
+    <div class="notif-item ${n.read?'':'unread'}">
+      <div class="notif-title">${n.title}</div>
+      <div class="notif-body">${n.body}</div>
+      <div class="notif-time">${n.time}</div>
+    </div>`).join('');
+  notifs.forEach(n => n.read = true);
+  DB.set('notifs_'+currentUser.id, notifs);
+  updateNotifBell();
+}
+
+function updateNotifBell() {
+  if (!currentUser) return;
+  const notifs = DB.get('notifs_'+currentUser.id) || [];
+  const hasUnread = notifs.some(n => !n.read);
+  const dot = document.getElementById('notif-dot');
+  if (dot) dot.classList.toggle('show', hasUnread);
+}
+
+// ============================================================
+// ADMIN DASHBOARD
+// ============================================================
+function loadAdminDashboard() {
+  showAdminTab('overview');
+}
+
+function showAdminTab(tab) {
+  document.querySelectorAll('#page-admin-dashboard .step-content').forEach(c => c.classList.remove('active'));
+  document.getElementById('a-tab-'+tab).classList.add('active');
+  document.querySelectorAll('#page-admin-dashboard .tab').forEach((t,i) => {
+    const tabs = ['overview','students','companies','matches','reviews'];
+    t.classList.toggle('active', tabs[i] === tab);
+  });
+  const students = DB.get('student_users') || [];
+  const companies = DB.get('company_users') || [];
+  const reqs = DB.get('all_requirements') || [];
+  document.getElementById('a-st-count').textContent = students.length;
+  document.getElementById('a-co-count').textContent = companies.length;
+  let totalMatches = 0;
+  students.forEach(s => {
+    const profile = DB.get('student_profile_'+s.id) || {};
+    reqs.forEach(req => { if (computeMatchScore(profile, req, s.id) >= 70) totalMatches++; });
+  });
+  document.getElementById('a-ma-count').textContent = totalMatches;
+  if (tab === 'overview') renderAdminOverview(students, companies, reqs, totalMatches);
+  if (tab === 'students') renderAdminStudents(students);
+  if (tab === 'companies') renderAdminCompanies(companies);
+  if (tab === 'matches') renderAdminMatches(students, reqs);
+  if (tab === 'reviews') renderAdminReviews(students);
+}
+
+function addActivity(msg) {
+  const acts = DB.get('admin_activity') || [];
+  acts.unshift({ msg, time: new Date().toLocaleString() });
+  if (acts.length > 50) acts.pop();
+  DB.set('admin_activity', acts);
+}
+
+function renderAdminOverview(students, companies, reqs, totalMatches) {
+  const statsEl = document.getElementById('admin-stats-detail');
+  if (statsEl) {
+    statsEl.innerHTML = `
+      <div class="flex justify-between text-sm mb8"><span class="text-muted">Total Students</span><span class="font-bold text-accent">${students.length}</span></div>
+      <div class="flex justify-between text-sm mb8"><span class="text-muted">Total Companies</span><span class="font-bold text-teal">${companies.length}</span></div>
+      <div class="flex justify-between text-sm mb8"><span class="text-muted">Active Requirements</span><span class="font-bold">${reqs.length}</span></div>
+      <div class="flex justify-between text-sm mb8"><span class="text-muted">Total Matches (≥70%)</span><span class="font-bold" style="color:var(--accent4)">${totalMatches}</span></div>
+      <div class="flex justify-between text-sm mb8"><span class="text-muted">Perfect Matches (100%)</span><span class="font-bold text-teal">${
+        (() => { let p=0; students.forEach(s=>{ const prof=DB.get('student_profile_'+s.id)||{}; reqs.forEach(r=>{ if(computeMatchScore(prof,r,s.id)===100)p++; }); }); return p; })()
+      }</span></div>`;
+  }
+  const actEl = document.getElementById('admin-activity');
+  if (actEl) {
+    const acts = DB.get('admin_activity') || [];
+    if (acts.length === 0) { actEl.innerHTML = '<div class="text-muted text-sm">No activity yet.</div>'; }
+    else { actEl.innerHTML = acts.slice(0,8).map(a => `<div class="text-xs mb8"><span class="text-muted">${a.time}</span><br>${a.msg}</div>`).join(''); }
+  }
+}
+
+function renderAdminStudents(students) {
+  const el = document.getElementById('admin-students-list');
+  if (!el) return;
+  if (students.length === 0) { el.innerHTML = '<div class="text-muted text-sm">No students registered.</div>'; return; }
+  el.innerHTML = `<div class="tbl-wrap"><table>
+    <tr><th>Name</th><th>Email</th><th>Degree</th><th>Skills</th><th>CGPA</th></tr>
+    ${students.map(s => { const p = DB.get('student_profile_'+s.id)||{}; return `
+    <tr>
+      <td>${p.name||s.name||'N/A'}</td>
+      <td style="color:var(--text2)">${s.email}</td>
+      <td>${p.degree||'N/A'}</td>
+      <td>${(p.skills||[]).slice(0,3).join(', ')||'N/A'}</td>
+      <td>${p.cgpa||'N/A'}</td>
+    </tr>`; }).join('')}
+  </table></div>`;
+}
+
+function renderAdminCompanies(companies) {
+  const el = document.getElementById('admin-companies-list');
+  if (!el) return;
+  if (companies.length === 0) { el.innerHTML = '<div class="text-muted text-sm">No companies registered.</div>'; return; }
+  const reqs = DB.get('all_requirements') || [];
+  el.innerHTML = `<div class="tbl-wrap"><table>
+    <tr><th>Company</th><th>Email</th><th>Industry</th><th>Requirements</th></tr>
+    ${companies.map(c => `
+    <tr>
+      <td>${c.name||'N/A'}</td>
+      <td style="color:var(--text2)">${c.email}</td>
+      <td>${c.industry||'N/A'}</td>
+      <td>${reqs.filter(r=>r.companyId===c.id).length}</td>
+    </tr>`).join('')}
+  </table></div>`;
+}
+
+function renderAdminMatches(students, reqs) {
+  const el = document.getElementById('admin-matches-list');
+  if (!el) return;
+  let rows = [];
+  students.forEach(s => {
+    const profile = DB.get('student_profile_'+s.id) || {};
+    reqs.forEach(req => {
+      const score = computeMatchScore(profile, req, s.id);
+      if (score >= 70) rows.push({ student: s, profile, req, score });
+    });
+  });
+  rows.sort((a,b) => b.score - a.score);
+  if (rows.length === 0) { el.innerHTML = '<div class="text-muted text-sm">No matches yet.</div>'; return; }
+  el.innerHTML = `<div class="tbl-wrap"><table>
+    <tr><th>Student</th><th>Company</th><th>Role</th><th>Score</th></tr>
+    ${rows.map(m => `<tr>
+      <td>${m.profile.name||m.student.name||'N/A'}</td>
+      <td>${m.req.companyName}</td>
+      <td>${m.req.role}</td>
+      <td style="color:${m.score>=100?'var(--accent2)':m.score>=85?'var(--accent4)':'var(--accent)'}; font-weight:700">${m.score}%</td>
+    </tr>`).join('')}
+  </table></div>`;
+}
+
+function renderAdminReviews(students) {
+  const el = document.getElementById('admin-reviews-list');
+  if (!el) return;
+  let allFeedback = [];
+  students.forEach(s => {
+    const fb = DB.get('feedback_to_'+s.id) || [];
+    fb.forEach(f => allFeedback.push({ ...f, studentName: s.name||s.email }));
+  });
+  if (allFeedback.length === 0) { el.innerHTML = '<div class="text-muted text-sm">No feedback sent yet.</div>'; return; }
+  el.innerHTML = `<div class="tbl-wrap"><table>
+    <tr><th>Student</th><th>Company</th><th>Type</th><th>Message</th><th>Date</th></tr>
+    ${allFeedback.map(f => `<tr>
+      <td>${f.studentName}</td>
+      <td>${f.company}</td>
+      <td><span class="badge ${f.type==='rejection'?'badge-red':f.type==='offer'?'badge-teal':'badge-purple'}">${f.type}</span></td>
+      <td style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${f.message}</td>
+      <td>${f.time}</td>
+    </tr>`).join('')}
+  </table></div>`;
+}
+
+// ============================================================
+// CHATBOT
+// ============================================================
+function toggleChat() {
+  document.getElementById('chatbot-panel').classList.toggle('show');
+}
+
+async function sendChat() {
+  const input = document.getElementById('chat-input');
+  const msg = input.value.trim();
+  if (!msg) return;
+  input.value = '';
+  appendMsg(msg, 'user');
+  // Typing indicator
+  const typingEl = document.createElement('div');
+  typingEl.className = 'typing';
+  typingEl.innerHTML = '<span></span><span></span><span></span>';
+  typingEl.id = 'typing-indicator';
+  document.getElementById('chat-msgs').appendChild(typingEl);
+  scrollChat();
+  // Context
+  const ctx = currentUser ? `User is a ${currentRole}: ${currentUser.name||currentUser.email}. ` : 'User is on the landing page. ';
+  try {
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
+      method:'POST',
+      headers:{ 'Content-Type':'application/json' },
+      body: JSON.stringify({
+        model:'claude-sonnet-4-20250514',
+        max_tokens:1000,
+        system:`You are BridgeBot, the AI assistant for CareerBridge AI — a career guidance and job matchmaking platform for students and companies in India. ${ctx}
+        Help users with: career advice, skill development, job matching tips, platform navigation, resume tips, interview preparation, and industry trends.
+        Keep responses concise (2-4 sentences), friendly, and actionable. Use relevant emojis sparingly.`,
+        messages:[{ role:'user', content: msg }]
+      })
+    });
+    const data = await res.json();
+    document.getElementById('typing-indicator')?.remove();
+    const reply = data.content?.[0]?.text || "I'm having trouble connecting. Please try again!";
+    appendMsg(reply, 'bot');
+  } catch(e) {
+    document.getElementById('typing-indicator')?.remove();
+    appendMsg("Sorry, I can't connect right now. Try refreshing or check your connection! 🔌", 'bot');
+  }
+}
+
+function appendMsg(text, type) {
+  const el = document.createElement('div');
+  el.className = `msg ${type}`;
+  el.textContent = text;
+  document.getElementById('chat-msgs').appendChild(el);
+  scrollChat();
+}
+
+function scrollChat() {
+  const msgs = document.getElementById('chat-msgs');
+  msgs.scrollTop = msgs.scrollHeight;
+}
+
+// ============================================================
+// INIT
+// ============================================================
+window.addEventListener('DOMContentLoaded', () => {
+  initAdmin();
+  setTimeout(() => {
+    document.getElementById('loader').style.opacity = '0';
+    setTimeout(() => {
+      document.getElementById('loader').style.display = 'none';
+      document.getElementById('app').style.display = 'block';
+      showPage('landing');
+    }, 500);
+  }, 1600);
+});
+
+// Close notif panel on outside click
+document.addEventListener('click', (e) => {
+  const panel = document.getElementById('notif-panel');
+  const bell = document.getElementById('notif-bell');
+  if (panel && bell && !panel.contains(e.target) && !bell.contains(e.target)) {
+    panel.classList.remove('show');
+  }
+});
+</script>
+</body>
+</html>
