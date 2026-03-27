@@ -928,9 +928,8 @@ select { cursor:pointer; }
 </div>
 
 <script>
-// ============================================================
 // DATA LAYER — localStorage persistence
-// ============================================================
+
 const DB = {
   get: (k) => { try { return JSON.parse(localStorage.getItem('cb_'+k)) || null; } catch(e){ return null; } },
   set: (k, v) => { try { localStorage.setItem('cb_'+k, JSON.stringify(v)); } catch(e){} },
@@ -949,10 +948,7 @@ function initAdmin() {
 let currentUser = null;
 let currentRole = null;
 const tagStores = {};
-
-// ============================================================
 // NAVIGATION
-// ============================================================
 function showPage(name) {
   document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
   const el = document.getElementById('page-'+name);
@@ -974,10 +970,7 @@ function updateNavButtons() {
     document.getElementById('nav-name').textContent = currentUser.name || currentUser.email;
   }
 }
-
-// ============================================================
 // AUTH
-// ============================================================
 function switchTab(role, mode) {
   const loginForm = document.getElementById(role[0]+'-login-form');
   const regForm = document.getElementById(role[0]+'-register-form');
@@ -1071,10 +1064,7 @@ function goToDashboard(role) {
     loadAdminDashboard();
   }
 }
-
-// ============================================================
 // TAGS INPUT
-// ============================================================
 function addTag(event, storeName, inputId) {
   if (event.key === 'Enter' || event.key === ',') {
     event.preventDefault();
@@ -1115,10 +1105,7 @@ function setTagsFromArray(storeName, arr, containerId) {
   tagStores[storeName] = arr ? [...arr] : [];
   renderTags(storeName, containerId);
 }
-
-// ============================================================
 // STUDENT DASHBOARD
-// ============================================================
 function loadStudentDashboard() {
   const profile = DB.get('student_profile_'+currentUser.id) || {};
   document.getElementById('s-dash-name').textContent = `Welcome, ${currentUser.name || 'Student'}! 👋`;
@@ -1574,10 +1561,7 @@ function closeTest() {
   clearInterval(timerInterval);
   document.getElementById('test-area').style.display = 'none';
 }
-
-// ============================================================
 // COMPANY DASHBOARD
-// ============================================================
 function loadCompanyDashboard() {
   document.getElementById('c-dash-name').textContent = `${currentUser.name} Dashboard 🏢`;
   renderCompanyOverview();
@@ -1789,10 +1773,7 @@ function renderCompanyNotifications() {
   DB.set('notifs_'+currentUser.id, notifs);
   updateNotifBell();
 }
-
-// ============================================================
 // NOTIFICATIONS
-// ============================================================
 function addNotification(userId, role, title, body) {
   const key = 'notifs_'+userId;
   const notifs = DB.get(key) || [];
@@ -1835,10 +1816,7 @@ function updateNotifBell() {
   const dot = document.getElementById('notif-dot');
   if (dot) dot.classList.toggle('show', hasUnread);
 }
-
-// ============================================================
 // ADMIN DASHBOARD
-// ============================================================
 function loadAdminDashboard() {
   showAdminTab('overview');
 }
@@ -1973,10 +1951,7 @@ function renderAdminReviews(students) {
     </tr>`).join('')}
   </table></div>`;
 }
-
-// ============================================================
 // CHATBOT
-// ============================================================
 function toggleChat() {
   document.getElementById('chatbot-panel').classList.toggle('show');
 }
@@ -2032,9 +2007,7 @@ function scrollChat() {
   msgs.scrollTop = msgs.scrollHeight;
 }
 
-// ============================================================
 // INIT
-// ============================================================
 window.addEventListener('DOMContentLoaded', () => {
   initAdmin();
   setTimeout(() => {
